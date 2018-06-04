@@ -78,7 +78,12 @@ public class Clock {
         texture = TextureUtils.loadTexture(context, R.drawable.digits2);
 
         for (int i = 0; i < 11; i++) {
-            mDigits.add(new DigitSprite());
+            DigitSprite ds = new DigitSprite();
+            ds.SetMarginTop(0.03f);
+            ds.SetAlign(Structures.ALIGN_CENTER);
+            ds.SetZ(-0.8f);
+            ds.SetDigitsCnt(11);
+            mDigits.add(ds);
         }
 
         mDigits.get(2).SetDigit(2, 10);
@@ -144,8 +149,10 @@ public class Clock {
         mHour = Hour;
         mDay = Day;
 
-        for (int i = 0; i < mDigits.size(); i++) {
-            mDigits.get(i).Draw(texture);
+        if (!bMenuIsEnable) {
+            for (int i = 0; i < mDigits.size(); i++) {
+                mDigits.get(i).Draw(texture);
+            }
         }
     }
 }

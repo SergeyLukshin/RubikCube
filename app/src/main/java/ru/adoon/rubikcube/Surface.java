@@ -4,14 +4,16 @@ import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.util.Pair;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.View;
 
-public class Surface extends GLSurfaceView
+public class Surface extends GLSurfaceView implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener
 {
     private float mPreviousX;
     private float mPreviousY;
     public float mDensity;
-    public GLRenderer mRender;
+    public GLRenderer mRender = null;
     //private MatrixGrabber mg = new MatrixGrabber();
 
     float mDeltaX = 0;
@@ -23,7 +25,10 @@ public class Surface extends GLSurfaceView
     int[] mSelectItem;
     float[] mTap = new float[2];
 
+    private GestureDetector gesture;
+
     int mAction = Structures.ACTION_NONE;
+    Context ctx;
 
     //public int nScreenWidth;
     //public int nScreenHeight;
@@ -31,6 +36,43 @@ public class Surface extends GLSurfaceView
     public Surface(Context context)
     {
         super(context);
+        ctx = context;
+        gesture = new GestureDetector(context, this);
+    }
+
+    @Override
+    public boolean onDown(MotionEvent event) {
+        setSystemUiVisibility(getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LOW_PROFILE);
+
+        // always return true to allow gestures to register
+        return true;
+    }
+
+    @Override
+    public void onShowPress(MotionEvent event) {
+        // this is handled already in onDown
+    }
+
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distX, float distY) {
+        // ignore scrolling started over a button
+        return true;
+    }
+
+    @Override
+    public boolean onSingleTapUp(MotionEvent event) {
+        // handle in onSingleTapConfirmed
+        return false;
+    }
+
+    @Override
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float vx, float vy) {
+        // ignore flings
+        return false;
+    }
+
+    @Override
+    public void onLongPress(MotionEvent event) {
     }
 
     public static float Dot(float[] p1, float[] p2) {
@@ -228,7 +270,35 @@ public class Surface extends GLSurfaceView
     }
 
     @Override
+    public boolean onSingleTapConfirmed(MotionEvent event) {
+        // button click
+        return true;
+    }
+
+    @Override
+    public boolean onDoubleTapEvent(MotionEvent event) {
+        // ignore intermediate events triggered in a double tap
+        return false;
+    }
+
+    @Override
+    public boolean onDoubleTap(MotionEvent event) {
+        if (mRender == null) return true;
+        if (mRender.data == null) return true;
+
+        if (mRender.data.mDoubleTap)
+            mRender.data.mLockSprite.SetNextType();
+        return true;
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
+
+        boolean res = gesture.onTouchEvent(event);
+
+        if (mRender == null) return true;
+        if (mRender.mActions == null) return true;
+        if (mRender.data == null) return true;
 
         if (mRender.mActions.ActionIsEnable()) {
             mAction = Structures.ACTION_NONE;
@@ -300,22 +370,27 @@ public class Surface extends GLSurfaceView
                 mPreviousX = -1;
                 mPreviousY = -1;
 
-                if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_main) {
+                if (index != Menu.menu_none && mRender.data.mMenu.GetActiveMenuIndex() >= 0 && !mRender.data.mMenu.menu.get(mRender.data.mMenu.GetActiveMenuIndex()).get(index).IsEnabled())
+                    return true;
+
+                if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_main ||
+                        mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_main_no_exit) {
 
                     mRender.data.mMenu.MenuClose();
 
                     switch (index) {
-                        case Menu.menu_new_game:
+                        case Menu.menu_do_main_new_game:
                             //mRender.ActionCubeMix(30);
                             if (mRender.data.mClock.IsEnable()) {
                                 mRender.data.mClock.Reset();
                             }
+                            mRender.ClearHistory();
                             mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
                             return true;
-                        case Menu.menu_figure:
+                        case Menu.menu_do_main_figure:
                             mRender.data.mMenu.MenuShow(Menu.menu_do_figure);
                             return true;
-                        case Menu.menu_timer:
+                        case Menu.menu_do_main_timer:
                             if (!mRender.data.mClock.IsEnable()) {
                                 mRender.data.mClock.Start();
                                 mRender.data.mClock.Pause();
@@ -323,9 +398,20 @@ public class Surface extends GLSurfaceView
                                 mRender.data.mClock.Stop();
                             }
                             break;
-                        case Menu.menu_close:
+                        case Menu.menu_do_main_rotate:
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_rotate);
+
+                            if (!mRender.data.mDoubleTap)
+                                mRender.data.mMenu.SetTexture(Menu.menu_do_rotate_double_tap, 0);
+                            else
+                                mRender.data.mMenu.SetTexture(Menu.menu_do_rotate_double_tap, 1);
+
+                            return true;
                         case Menu.menu_none:
                             break;
+                        case Menu.menu_do_main_exit:
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_exit);
+                            return true;
                     }
                 }
                 if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_shuffle) {
@@ -333,10 +419,10 @@ public class Surface extends GLSurfaceView
                     mRender.data.mMenu.MenuClose();
 
                     switch (index) {
-                        case Menu.menu_yes:
-                            mRender.ActionCubeMix(30);
+                        case Menu.menu_do_shuffle_yes:
+                            mRender.ActionFigureMix(30);
                             break;
-                        case Menu.menu_no:
+                        case Menu.menu_do_shuffle_no:
                             mRender.data.mFigure.FigureInit();
                             break;
                     }
@@ -347,10 +433,10 @@ public class Surface extends GLSurfaceView
                     mRender.data.mMenu.MenuClose();
 
                     switch (index) {
-                        case Menu.menu_yes:
+                        case Menu.menu_do_exit_yes:
                             MainActivity.activity.finish();
                             break;
-                        case Menu.menu_no:
+                        case Menu.menu_do_exit_no:
                             break;
                     }
                 }
@@ -362,13 +448,16 @@ public class Surface extends GLSurfaceView
                     if (mRender.data.mClock.IsEnable()) {
                         mRender.data.mClock.Reset();
                     }
+                    mRender.ClearHistory();
+                    mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                    return true;
 
-                    switch (index) {
+                    /*switch (index) {
                         case Menu.menu_new_game2:
                             //mRender.ActionCubeMix(30);
                             mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
                             return true;
-                    }
+                    }*/
                 }
 
                 if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_figure) {
@@ -376,25 +465,192 @@ public class Surface extends GLSurfaceView
                     mRender.data.mMenu.MenuClose();
 
                     switch (index) {
-                        case Menu.menu_cube:
-                            if (mRender.data.mClock.IsEnable()) {
+                        case Menu.menu_do_figure_cube:
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_size_cube);
+                            return true;
+                        case Menu.menu_do_figure_pyramid:
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_size_pyramid);
+                            return true;
+                        case Menu.menu_do_figure_domino_cube:
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_size_dcube);
+                            return true;
+                        case Menu.menu_none:
+                            break;
+                    }
+                            /*if (mRender.data.mClock.IsEnable()) {
                                 mRender.data.mClock.Reset();
                             }
                             mRender.data.mFigure.SetFigure(0);
-                            mRender.mHistory.clear();
-                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
-                            break;
-                        case Menu.menu_pyramid:
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);*/
+                }
+
+                if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_size_cube) {
+
+                    mRender.data.mMenu.MenuClose();
+
+                    switch (index) {
+                        case Menu.menu_do_size_cube_222:
                             if (mRender.data.mClock.IsEnable()) {
                                 mRender.data.mClock.Reset();
                             }
-                            mRender.data.mFigure.SetFigure(1);
-                            mRender.mHistory.clear();
+                            mRender.data.mFigure.SetFigure(Structures.CUBE, 0);
+                            mRender.ClearHistory();
                             mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_do_size_cube_333:
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.data.mFigure.SetFigure(Structures.CUBE, 1);
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_do_size_cube_444:
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.data.mFigure.SetFigure(Structures.CUBE, 2);
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_do_size_cube_555:
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.data.mFigure.SetFigure(Structures.CUBE, 3);
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_none:
+                            break;
+                    }
+                }
+
+                if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_size_pyramid) {
+
+                    mRender.data.mMenu.MenuClose();
+
+                    switch (index) {
+                        case Menu.menu_do_size_pyramid_222:
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.data.mFigure.SetFigure(Structures.PYRAMID, 0);
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_do_size_pyramid_333:
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.data.mFigure.SetFigure(Structures.PYRAMID, 1);
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_do_size_pyramid_444:
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.data.mFigure.SetFigure(Structures.PYRAMID, 2);
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_none:
+                            break;
+                    }
+                }
+
+                if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_size_dcube) {
+
+                    mRender.data.mMenu.MenuClose();
+
+                    switch (index) {
+                        case Menu.menu_do_size_dcube_233:
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.data.mFigure.SetFigure(Structures.DOMINO_CUBE, 0);
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_do_size_dcube_244:
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.data.mFigure.SetFigure(Structures.DOMINO_CUBE, 1);
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_do_size_dcube_344:
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.data.mFigure.SetFigure(Structures.DOMINO_CUBE, 2);
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_do_size_dcube_255:
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.data.mFigure.SetFigure(Structures.DOMINO_CUBE, 3);
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_do_size_dcube_355:
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.data.mFigure.SetFigure(Structures.DOMINO_CUBE, 4);
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_do_size_dcube_455:
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.data.mFigure.SetFigure(Structures.DOMINO_CUBE, 5);
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_none:
+                            break;
+                    }
+                }
+
+                if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_rotate) {
+
+                    mRender.data.mMenu.MenuClose();
+
+                    switch (index) {
+                        case Menu.menu_do_rotate_rotate1:
+                            mRender.data.mRotateType = Structures.ROTATE_ALL_FIGURE;
+                            break;
+                        case Menu.menu_do_rotate_rotate2:
+                            mRender.data.mRotateType = Structures.ROTATE_CAMERA_FIGURE;
+                            break;
+                        case Menu.menu_do_rotate_double_tap:
+                            mRender.data.mDoubleTap = !mRender.data.mDoubleTap;
                             break;
                         case Menu.menu_none:
                             break;
                     }
+                }
+
+                if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_complete_no_time) {
+
+                    mRender.data.mMenu.MenuClose();
+
+                    mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                    return true;
+
+                    /*switch (index) {
+                        case Menu.menu_new_game3:
+                            //mRender.ActionCubeMix(30);
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                    }*/
                 }
 
                 return true;
@@ -410,7 +666,7 @@ public class Surface extends GLSurfaceView
                 Action a = mRender.mHistory.get(mRender.mHistory.size() - 1).clone();
                 a.m_ActionDirectRotate = -a.m_ActionDirectRotate;
                 mRender.mActions.Add(a);
-                mRender.mHistory.remove(mRender.mHistory.size() - 1);
+                mRender.RemoveLastHistory();
                 //mRender.list.ActionStart();
 
                 return true;
@@ -431,33 +687,42 @@ public class Surface extends GLSurfaceView
                 mRender.data.mMenu.MenuShow(Menu.menu_do_main);
 
                 if (!mRender.data.mClock.IsEnable())
-                    mRender.data.mMenu.SetTexture(1, 0);
+                    mRender.data.mMenu.SetTexture(Menu.menu_do_main_timer, 0);
                 else
-                    mRender.data.mMenu.SetTexture(1, 1);
+                    mRender.data.mMenu.SetTexture(Menu.menu_do_main_timer, 1);
 
                 return true;
             }
 
-            float[] ray;
-            ray = getViewRay(tap);
-            mTap = tap;
-            Structures.PointView = ray.clone();
-            Pair<int[], float[]> pr = mRender.data.mFigure.GetSelectItem(ray, Structures.CameraEye/*, false*/);
-            mSelectItem = pr.first;
-            float[] intersect = pr.second;
-            //mRender.mLine = new Line(Structures.CameraEye, Structures.PointView);
+            if (mRender.data.mLockSprite.IsPressed(x, y)) {
+                mRender.data.mLockSprite.SetNextType();
+                return true;
+            }
 
-            if (mSelectItem != null) {
-                if (mSelectItem[0] >= 0 && mSelectItem[1] >= 0 && mSelectItem[2] >= 0) {
-                    mAction = Structures.ACTION_DO;
-                    mRender.data.mFigure.CreateExVertices(mSelectItem, intersect);
+            if (mRender.data.mRotateType == Structures.ROTATE_ALL_FIGURE
+                    || mRender.data.mRotateType == Structures.ROTATE_CAMERA_FIGURE &&
+                    mRender.data.mLockSprite.GetType() == Structures.LOCK_CAMERA) {
+                float[] ray;
+                ray = getViewRay(tap);
+                mTap = tap;
+                Structures.PointView = ray.clone();
+                Pair<int[], float[]> pr = mRender.data.mFigure.GetSelectItem(ray, Structures.CameraEye);
+                mSelectItem = pr.first;
+                float[] intersect = pr.second;
+                //mRender.mLine = new Line(Structures.CameraEye, Structures.PointView);
+
+                if (mSelectItem != null) {
+                    if (mSelectItem[0] >= 0 && mSelectItem[1] >= 0 && mSelectItem[2] >= 0) {
+                        mAction = Structures.ACTION_DO;
+                        mRender.data.mFigure.CreateExVertices(mSelectItem, intersect);
+                    }
                 }
             }
         }
 
         if (mRender.data.mMenu.MenuIsEnable()) return true;
 
-        if (event.getAction() == MotionEvent.ACTION_MOVE && pointerCount == 1 && mAction != Structures.ACTION_DO)
+        if (mRender.data.mLockSprite.GetType() == Structures.UNLOCK && event.getAction() == MotionEvent.ACTION_MOVE && pointerCount == 1 && mAction != Structures.ACTION_DO)
         {
             if (mPreviousX >= 0 && mPreviousY >= 0) {
                 mDeltaX = (x - mPreviousX) / mDensity / 2f;
@@ -485,89 +750,8 @@ public class Surface extends GLSurfaceView
 
                 mRender.DoAction(mSelectItem, ray, Structures.CameraEye);
             }
-
-            /*Bool bNeedRecalc = new Bool(false);
-
-            float[] ray;
-            ray = getViewRay(tap);
-            Structures.PointView = ray.clone();
-            int[] res = mRender.data.mFigure.GetSelectItem(ray, Structures.CameraEye);
-
-            if (res[0] >= 0 && res[1] >= 0 && res[2] >= 0) {
-                if (res[0] != mSelectItem[0] || res[1] != mSelectItem[1] || res[2] != mSelectItem[2]
-                        || res[3] != mSelectItem[3]) {
-
-                    mRender.DoAction(mSelectItem, res, bNeedRecalc);
-
-                    if (bNeedRecalc.mVal) {
-
-                        boolean bFind = false;
-                        // идем сначала в одну сторону, потом в другую
-                        for (int i = 0; i < 2; i++) {
-                            int iter = Math.round(Math.min(mRender.m_height, mRender.m_width) / 50);
-                            while (true) {
-                                float[] newTap = new float[2];
-                                newTap[0] = tap[0] - mTap[0];
-                                newTap[1] = tap[1] - mTap[1];
-                                Surface.Normalize2D(newTap);
-                                if (i == 0) {
-                                    newTap[0] = tap[0] + iter * newTap[0];
-                                    newTap[1] = tap[1] + iter * newTap[1];
-                                } else {
-                                    newTap[0] = tap[0] - iter * newTap[0];
-                                    newTap[1] = tap[1] - iter * newTap[1];
-                                }
-
-                                float[] newRay;
-                                newRay = getViewRay(newTap);
-                                Structures.PointView = newRay.clone();
-                                int[] newRes = mRender.data.mFigure.GetSelectItem(newRay, Structures.CameraEye);
-
-                                if (newRes[0] >= 0 && newRes[1] >= 0 && newRes[2] >= 0) {
-                                    if ((res[0] != newRes[0] || res[1] != newRes[1] || res[2] != newRes[2]) &&
-                                            (mSelectItem[0] != newRes[0] || mSelectItem[1] != newRes[1] || mSelectItem[2] != newRes[2])) {
-                                        // нашли другой элемент
-                                        if (i == 0)
-                                            mRender.DoAction(mSelectItem, newRes, bNeedRecalc);
-                                        else
-                                            mRender.DoAction(newRes, res, bNeedRecalc);
-
-                                        if (bNeedRecalc.mVal) {
-                                            iter += Math.round(Math.min(mRender.m_height, mRender.m_width) / 50);
-                                            continue;
-                                        }
-                                        else {
-                                            bFind = true;
-                                            break;
-                                        }
-                                    }
-                                    else {
-                                        // дошли до границы, идем в другую сторону
-                                        if (i == 0) {
-                                            if (res[3] != newRes[3])
-                                                break;
-                                        }
-                                    }
-                                } else {
-                                    // дошли до края, но ничего не нашли, идем в другую сторону
-                                    break;
-                                }
-
-                                if (bFind) break;
-
-                                iter += Math.round(Math.min(mRender.m_height, mRender.m_width) / 50);
-                            }
-                        }
-                    }
-                }
-            }
-            else {
-                //mRender.DoAction(mSelectItem, res, bNeedRecalc);
-            }
-            */
-            //mRender.mLine = new Line(Structures.CameraEye, Structures.PointView);
         }
-        if (event.getAction() == MotionEvent.ACTION_MOVE && pointerCount == 2)
+        if (mRender.data.mLockSprite.GetType() == Structures.UNLOCK && event.getAction() == MotionEvent.ACTION_MOVE && pointerCount == 2)
         {
             // zoom
             float x1 = event.getX(0);
@@ -629,7 +813,7 @@ public class Surface extends GLSurfaceView
             mAction = Structures.ACTION_SCALE;
         }
 
-        if (event.getAction() == MotionEvent.ACTION_UP) {
+        if (mRender.data.mLockSprite.GetType() == Structures.UNLOCK && event.getAction() == MotionEvent.ACTION_UP) {
             if (mAction == Structures.ACTION_MOVE) {
                 Camera.mDeltaXInertia = mDeltaX;
                 Camera.mDeltaYInertia = mDeltaY;
@@ -642,6 +826,6 @@ public class Surface extends GLSurfaceView
             mAction = Structures.ACTION_NONE;
         }
 
-        return true;
+        return res;
     }
 }

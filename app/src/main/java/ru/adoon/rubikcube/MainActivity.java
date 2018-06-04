@@ -35,8 +35,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (render.data != null)
-            render.data.mMenu.MenuShow(Menu.menu_do_exit);
+        if (render != null && render.data != null && render.data.mMenu != null) {
+            if (render.data.mMenu.MenuIsEnable()) {
+                render.data.mMenu.MenuClose();
+                render.data.mMenu.PrevMenuShow();
+            }
+            else {
+                render.data.mMenu.menuHistory.clear();
+                render.data.mMenu.MenuShow(Menu.menu_do_exit);
+            }
+        }
     }
 
     @Override
@@ -121,7 +129,12 @@ public class MainActivity extends AppCompatActivity {
             if (render.data.mClock.IsEnable()) {
                 render.data.ResumeClock();
                 render.data.mClock.Pause();
-                render.data.mMenu.MenuShow(Menu.menu_do_main);
+                render.data.mMenu.MenuInit();
+                render.data.mMenu.MenuShow(Menu.menu_do_main_no_exit);
+                if (!render.data.mClock.IsEnable())
+                    render.data.mMenu.SetTexture(Menu.menu_do_main_timer, 0);
+                else
+                    render.data.mMenu.SetTexture(Menu.menu_do_main_timer, 1);
             }
         }
         reqRend(); // запускаем рендеринг

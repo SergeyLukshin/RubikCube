@@ -30,8 +30,8 @@ public class PyramidItem {
 
     private float[] mMatrix = new float[16];
     private  float[] mModelMatrix = new float[16];
-    private  float[] mPos = null;
-    public float mScale = 2.7f;
+    //private  float[] mPos = null;
+    private float mScale = 2.7f;
 
     public int mPosX;
     public int mPosY;
@@ -42,6 +42,7 @@ public class PyramidItem {
 
     public int[] verge_color_index;// = new int[6];
     //private float[] vecRotate = new float[4];
+    Pyramid mParent;
 
     float[] vertices;
 
@@ -77,7 +78,7 @@ public class PyramidItem {
     private int SetTriangle(float[] vertices, int cur_index, float[] vertex,
                             int ind1, int ind2, int ind3,
                             float n1, float n2, float n3,
-                            int verge_color_index) {
+                            int verge_color_index, int PyramidDim) {
         ind1--;
         ind2--;
         ind3--;
@@ -93,32 +94,115 @@ public class PyramidItem {
         texture3[0] = (verge_color_index + 1) / 5f;
         texture3[1] = 1;
 
-        float difX = (mPosX - 2) * 1 / 2f;
-        float difY = (mPosY - 1) * Pyramid.h;
+        float H = Pyramid.h * PyramidDim;
+        float a = PyramidDim;
+        float Radius = (3 * H * H + a * a) / (6 * H); // радиус сферы, описанной около сборной пирамиды
+
+        float difX = (mPosX - (PyramidDim - 1)) * 1 / 2f;
+        float difY = - Pyramid.h * (PyramidDim - 1 - mPosY) - Pyramid.h / 2;//(mPosY - (PyramidDim - 1) / 2f) * Pyramid.h;
         float difZ = 0;//2 * mPosZ * mScale;
         if (mType == 0) {
-            if (mPosY == 1) {
-                if ((mPosZ - 2) == -1) difZ = -2 * Pyramid.h2_3;
-                if ((mPosZ - 2) == 1) difZ = Pyramid.h2_3;
+            if (PyramidDim == 2) {
+                if (mPosY == 0) {
+                    if ((mPosZ - (PyramidDim - 1)) == -1) difZ = -2 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 1) difZ = Pyramid.h2_3;
+                }
             }
-            if (mPosY == 0) {
-                if ((mPosZ - 2) == -2) difZ = -4 * Pyramid.h2_3;
-                if ((mPosZ - 2) == 0) difZ = -Pyramid.h2_3;
-                if ((mPosZ - 2) == 2) difZ = 2 * Pyramid.h2_3;
+            if (PyramidDim == 3) {
+                if (mPosY == 1) {
+                    if ((mPosZ - (PyramidDim - 1)) == -1) difZ = -2 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 1) difZ = Pyramid.h2_3;
+                }
+                if (mPosY == 0) {
+                    if ((mPosZ - (PyramidDim - 1)) == -2) difZ = -4 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 0) difZ = -Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 2) difZ = 2 * Pyramid.h2_3;
+                }
+            }
+            if (PyramidDim == 4) {
+                if (mPosY == 2) {
+                    if ((mPosZ - (PyramidDim - 1)) == -1) difZ = -2 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 1) difZ = Pyramid.h2_3;
+                }
+                if (mPosY == 1) {
+                    if ((mPosZ - (PyramidDim - 1)) == -2) difZ = -4 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 0) difZ = -Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 2) difZ = 2 * Pyramid.h2_3;
+                }
+                if (mPosY == 0) {
+                    if ((mPosZ - (PyramidDim - 1)) == -3) difZ = -6 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == -1) difZ = -3 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 1) difZ = 0;//Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 3) difZ = 3 * Pyramid.h2_3;
+                }
+            }
+            if (PyramidDim == 5) {
+                if (mPosY == 3) {
+                    if ((mPosZ - (PyramidDim - 1)) == -1) difZ = -2 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 1) difZ = Pyramid.h2_3;
+                }
+                if (mPosY == 2) {
+                    if ((mPosZ - (PyramidDim - 1)) == -2) difZ = -4 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 0) difZ = -Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 2) difZ = 2 * Pyramid.h2_3;
+                }
+                if (mPosY == 1) {
+                    if ((mPosZ - (PyramidDim - 1)) == -3) difZ = -6 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == -1) difZ = -3 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 1) difZ = 0;//Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 3) difZ = 3 * Pyramid.h2_3;
+                }
+                if (mPosY == 0) {
+                    if ((mPosZ - (PyramidDim - 1)) == -4) difZ = -8 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == -2) difZ = -5 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 0) difZ = -2 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 2) difZ = Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 4) difZ = 4 * Pyramid.h2_3;
+                }
             }
         }
         else {
-            if ((mPosZ - 2) == -1) difZ = -2 * Pyramid.h2_3;
-            if ((mPosZ - 2) == 1) difZ = Pyramid.h2_3;
+            if (PyramidDim == 3) {
+                if ((mPosZ - (PyramidDim - 1)) == -1) difZ = -2 * Pyramid.h2_3;
+                if ((mPosZ - (PyramidDim - 1)) == 1) difZ = Pyramid.h2_3;
+            }
+            if (PyramidDim == 4) {
+                if (mPosY == 1) {
+                    if ((mPosZ - (PyramidDim - 1)) == -1) difZ = -2 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 1) difZ = Pyramid.h2_3;
+                }
+                if (mPosY == 0) {
+                    if ((mPosZ - (PyramidDim - 1)) == -2) difZ = -4 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 0) difZ = -1 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 2) difZ = 2 * Pyramid.h2_3;
+                }
+            }
+            if (PyramidDim == 5) {
+                if (mPosY == 2) {
+                    if ((mPosZ - (PyramidDim - 1)) == -1) difZ = -2 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 1) difZ = Pyramid.h2_3;
+                }
+                if (mPosY == 1) {
+                    if ((mPosZ - (PyramidDim - 1)) == -2) difZ = -4 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 0) difZ = -1 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 2) difZ = 2 * Pyramid.h2_3;
+                }
+                if (mPosY == 0) {
+                    if ((mPosZ - (PyramidDim - 1)) == -3) difZ = -6 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == -1) difZ = -3 * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 1) difZ = 0;// * Pyramid.h2_3;
+                    if ((mPosZ - (PyramidDim - 1)) == 3) difZ = 3 * Pyramid.h2_3;
+                }
+            }
         }
 
-        difY += Pyramid.radius;
+        difY += Radius;//Pyramid.radius;
 
-        if (mPos != null) {
+        /*if (mPos != null) {
             difX += mPos[0];
             difY += mPos[1];
             difZ += mPos[2];
-        }
+        }*/
 
         float x1 = (vertex[ind1 * 3] + difX) * mScale;
         float y1 = (vertex[ind1 * 3 + 1] + difY) * mScale;
@@ -427,12 +511,16 @@ public class PyramidItem {
         }
     }
 
-    PyramidItem(int posX, int posY, int posZ, int type, int rowL, int rowR, int rowB, int rowF, int[] verge_color_index_) {
+    PyramidItem(Pyramid parent, int posX, int posY, int posZ, int type, int rowL, int rowR, int rowB, int rowF, int[] verge_color_index_, int PyramidDim, float Scale) {
+
+        mParent = parent;
 
         mPosX = posX;
         mPosY = posY;
         mPosZ = posZ;
         mType = type;
+
+        mScale = Scale;
 
         if (mType == 0) {
             verge_color_index = new int[Pyramid.TRIANGLE_COUNT_PYRAMID];
@@ -446,10 +534,10 @@ public class PyramidItem {
         if (verge_color_index_ == null) {
             int val = mPosX * 1000 + mPosY * 100 + mPosZ * 10 + 0;
 
-            Pyramid.mLSide.add(val + rowL);
-            Pyramid.mRSide.add(val + rowR);
-            Pyramid.mBSide.add(val + rowB);
-            Pyramid.mFSide.add(val + rowF);
+            mParent.mLSide.add(val + rowL);
+            mParent.mRSide.add(val + rowR);
+            mParent.mBSide.add(val + rowB);
+            mParent.mFSide.add(val + rowF);
 
             for (int i = 0; i < verge_color_index.length; i++)
                 verge_color_index[i] = Pyramid.BLACK;
@@ -493,20 +581,20 @@ public class PyramidItem {
         float z2 = zx / 2;
 
         if (mType == 0) {
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex, 1, 2, 3, 0, y1, z1, verge_color_index[0]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex, 1, 3, 4, x2, y1, -z2, verge_color_index[1]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex, 1, 4, 2, -x2, y1, -z2, verge_color_index[2]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex, 4, 3, 2, 0, -1, 0, verge_color_index[3]);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex, 1, 2, 3, 0, y1, z1, verge_color_index[0], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex, 1, 3, 4, x2, y1, -z2, verge_color_index[1], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex, 1, 4, 2, -x2, y1, -z2, verge_color_index[2], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex, 4, 3, 2, 0, -1, 0, verge_color_index[3], PyramidDim);
         }
         else {
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 1, 2, 3, 0, y1, z1, verge_color_index[0]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 3, 6, 5, 0, -1, 0, verge_color_index[1]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 4, 2, 1, 0, 1, 0, verge_color_index[2]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 5, 6, 4, 0, -y1, -z1, verge_color_index[3]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 4, 6, 2, -x2, y1, -z2, verge_color_index[4]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 6, 3, 2, -x2, -y1, z2, verge_color_index[5]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 5, 4, 1, x2, y1, -z2, verge_color_index[6]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 5, 1, 3, x2, -y1, z2, verge_color_index[7]);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 1, 2, 3, 0, y1, z1, verge_color_index[0], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 3, 6, 5, 0, -1, 0, verge_color_index[1], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 4, 2, 1, 0, 1, 0, verge_color_index[2], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 5, 6, 4, 0, -y1, -z1, verge_color_index[3], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 4, 6, 2, -x2, y1, -z2, verge_color_index[4], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 6, 3, 2, -x2, -y1, z2, verge_color_index[5], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 5, 4, 1, x2, y1, -z2, verge_color_index[6], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 5, 1, 3, x2, -y1, z2, verge_color_index[7], PyramidDim);
         }
 
         vertexData = ByteBuffer
@@ -516,7 +604,11 @@ public class PyramidItem {
         vertexData.put(vertices);
     }
 
-    PyramidItem(PyramidItem pi, int[] verge_color_index_) {
+    PyramidItem(Pyramid parent, PyramidItem pi, int[] verge_color_index_, int PyramidDim, float Scale) {
+
+        mParent = parent;
+
+        mScale = Scale;
 
         mPosX = pi.mPosX;
         mPosY = pi.mPosY;
@@ -549,20 +641,20 @@ public class PyramidItem {
         float z2 = zx / 2;
 
         if (mType == 0) {
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex, 1, 2, 3, 0, y1, z1, verge_color_index[0]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex, 1, 3, 4, x2, y1, -z2, verge_color_index[1]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex, 1, 4, 2, -x2, y1, -z2, verge_color_index[2]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex, 4, 3, 2, 0, -1, 0, verge_color_index[3]);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex, 1, 2, 3, 0, y1, z1, verge_color_index[0], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex, 1, 3, 4, x2, y1, -z2, verge_color_index[1], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex, 1, 4, 2, -x2, y1, -z2, verge_color_index[2], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex, 4, 3, 2, 0, -1, 0, verge_color_index[3], PyramidDim);
         }
         else {
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 1, 2, 3, 0, y1, z1, verge_color_index[0]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 3, 6, 5, 0, -1, 0, verge_color_index[1]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 4, 2, 1, 0, 1, 0, verge_color_index[2]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 5, 6, 4, 0, -y1, -z1, verge_color_index[3]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 4, 6, 2, -x2, y1, -z2, verge_color_index[4]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 6, 3, 2, -x2, -y1, z2, verge_color_index[5]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 5, 4, 1, x2, y1, -z2, verge_color_index[6]);
-            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 5, 1, 3, x2, -y1, z2, verge_color_index[7]);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 1, 2, 3, 0, y1, z1, verge_color_index[0], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 3, 6, 5, 0, -1, 0, verge_color_index[1], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 4, 2, 1, 0, 1, 0, verge_color_index[2], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 5, 6, 4, 0, -y1, -z1, verge_color_index[3], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 4, 6, 2, -x2, y1, -z2, verge_color_index[4], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 6, 3, 2, -x2, -y1, z2, verge_color_index[5], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 5, 4, 1, x2, y1, -z2, verge_color_index[6], PyramidDim);
+            cur_index = SetTriangle(vertices, cur_index, Pyramid.vertex2, 5, 1, 3, x2, -y1, z2, verge_color_index[7], PyramidDim);
         }
 
         vertexData = ByteBuffer

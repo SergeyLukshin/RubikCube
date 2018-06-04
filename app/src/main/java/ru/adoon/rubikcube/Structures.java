@@ -5,6 +5,11 @@ package ru.adoon.rubikcube;
  */
 
 public class Structures {
+
+    public static final int CUBE = 0;
+    public static final int PYRAMID = 1;
+    public static final int DOMINO_CUBE = 2;
+
     public final static int POSITION_COUNT = 3;
     public static final int NORMAL_COUNT = 3;
     public static final int COLOR_COUNT = 3;
@@ -32,6 +37,15 @@ public class Structures {
     public static final int DIRECT_RIGHT = 1;
     public static final int DIRECT_NONE = 0;
 
+    public static final int ROTATE_ALL_FIGURE = 0;
+    public static final int ROTATE_CAMERA_FIGURE = 1;
+
+    public static final int LOCK_CAMERA = 0;
+    public static final int UNLOCK = 1;
+
+    public static final int ALIGN_CENTER = 0;
+    public static final int ALIGN_RIGHT = 1;
+    public static final int ALIGN_LEFT = 2;
 
     public static float[] Light = new float[4];
     public static float[] CameraEye = new float[4];

@@ -34,6 +34,10 @@ public class CubeItem {
     public int mPosY;
     public int mPosZ;
 
+    public int mCubeDimX;
+    public int mCubeDimY;
+    public int mCubeDimZ;
+
     public boolean m_bSelect = false;
 
     public int[] verge_color_index = new int[6];
@@ -137,9 +141,9 @@ public class CubeItem {
             texture3[1] = 1;
         }
 
-        float difX = 2 * mPosX * mScale;
-        float difY = 2 * mPosY * mScale;
-        float difZ = 2 * mPosZ * mScale;
+        float difX = 2 * (mPosX - (mCubeDimX - 1) / 2f);//2 * mPosX * mScale;
+        float difY = 2 * (mPosY - (mCubeDimY - 1) / 2f);//2 * mPosY * mScale;
+        float difZ = 2 * (mPosZ - (mCubeDimZ - 1) / 2f);//2 * mPosZ * mScale;
 
         if (mPos != null) {
             difX += mPos[0];
@@ -147,17 +151,17 @@ public class CubeItem {
             difZ += mPos[2];
         }
 
-        float x1 = vertex[ind1 * 3] * mScale + difX;
-        float y1 = vertex[ind1 * 3 + 1] * mScale + difY;
-        float z1 = vertex[ind1 * 3 + 2] * mScale + difZ;
+        float x1 = (vertex[ind1 * 3] + difX) * mScale;// + difX;
+        float y1 = (vertex[ind1 * 3 + 1] + difY) * mScale;// + difY;
+        float z1 = (vertex[ind1 * 3 + 2] + difZ) * mScale;// + difZ;
 
-        float x2 = vertex[ind2 * 3] * mScale + difX;
-        float y2 = vertex[ind2 * 3 + 1] * mScale + difY;
-        float z2 = vertex[ind2 * 3 + 2] * mScale + difZ;
+        float x2 = (vertex[ind2 * 3] + difX) * mScale;// + difX;
+        float y2 = (vertex[ind2 * 3 + 1] + difY) * mScale;// + difY;
+        float z2 = (vertex[ind2 * 3 + 2] + difZ) * mScale;// + difZ;
 
-        float x3 = vertex[ind3 * 3] * mScale + difX;
-        float y3 = vertex[ind3 * 3 + 1] * mScale + difY;
-        float z3 = vertex[ind3 * 3 + 2] * mScale + difZ;
+        float x3 = (vertex[ind3 * 3] + difX) * mScale;// + difX;
+        float y3 = (vertex[ind3 * 3 + 1] + difY) * mScale;// + difY;
+        float z3 = (vertex[ind3 * 3 + 2] + difZ) * mScale;// + difZ;
 
         vertices[cur_index++] = x1;
         vertices[cur_index++] = y1;
@@ -192,55 +196,90 @@ public class CubeItem {
         return cur_index;
     }
 
-    static void Rotate(int[] verge_color_index_, int rotate_type, int direction) {
+    static void Rotate(int[] verge_color_index_, int rotate_type, int direction, boolean isEqualDim) {
         if (rotate_type == Structures.AXE_X) {
-            if (direction == Structures.DIRECT_LEFT) {
+            if (isEqualDim) {
+                if (direction == Structures.DIRECT_LEFT) {
+                    int ind = verge_color_index_[0];
+                    verge_color_index_[0] = verge_color_index_[4];
+                    verge_color_index_[4] = verge_color_index_[2];
+                    verge_color_index_[2] = verge_color_index_[5];
+                    verge_color_index_[5] = ind;
+                } else {
+                    int ind = verge_color_index_[0];
+                    verge_color_index_[0] = verge_color_index_[5];
+                    verge_color_index_[5] = verge_color_index_[2];
+                    verge_color_index_[2] = verge_color_index_[4];
+                    verge_color_index_[4] = ind;
+                }
+            }
+            else {
                 int ind = verge_color_index_[0];
-                verge_color_index_[0] = verge_color_index_[4];
-                verge_color_index_[4] = verge_color_index_[2];
-                verge_color_index_[2] = verge_color_index_[5];
+                verge_color_index_[0] = verge_color_index_[2];
+                verge_color_index_[2] = ind;
+                ind = verge_color_index_[4];
+                verge_color_index_[4] = verge_color_index_[5];
                 verge_color_index_[5] = ind;
-            } else {
-                int ind = verge_color_index_[0];
-                verge_color_index_[0] = verge_color_index_[5];
-                verge_color_index_[5] = verge_color_index_[2];
-                verge_color_index_[2] = verge_color_index_[4];
-                verge_color_index_[4] = ind;
             }
         }
         if (rotate_type == Structures.AXE_Y) {
-            if (direction == Structures.DIRECT_LEFT) {
+            if (isEqualDim) {
+                if (direction == Structures.DIRECT_LEFT) {
+                    int ind = verge_color_index_[0];
+                    verge_color_index_[0] = verge_color_index_[3];
+                    verge_color_index_[3] = verge_color_index_[2];
+                    verge_color_index_[2] = verge_color_index_[1];
+                    verge_color_index_[1] = ind;
+                } else {
+                    int ind = verge_color_index_[0];
+                    verge_color_index_[0] = verge_color_index_[1];
+                    verge_color_index_[1] = verge_color_index_[2];
+                    verge_color_index_[2] = verge_color_index_[3];
+                    verge_color_index_[3] = ind;
+                }
+            }
+            else {
                 int ind = verge_color_index_[0];
-                verge_color_index_[0] = verge_color_index_[3];
-                verge_color_index_[3] = verge_color_index_[2];
-                verge_color_index_[2] = verge_color_index_[1];
-                verge_color_index_[1] = ind;
-            } else {
-                int ind = verge_color_index_[0];
-                verge_color_index_[0] = verge_color_index_[1];
-                verge_color_index_[1] = verge_color_index_[2];
-                verge_color_index_[2] = verge_color_index_[3];
+                verge_color_index_[0] = verge_color_index_[2];
+                verge_color_index_[2] = ind;
+                ind = verge_color_index_[1];
+                verge_color_index_[1] = verge_color_index_[3];
                 verge_color_index_[3] = ind;
             }
         }
         if (rotate_type == Structures.AXE_Z) {
-            if (direction == Structures.DIRECT_LEFT) {
+            if (isEqualDim) {
+                if (direction == Structures.DIRECT_LEFT) {
+                    int ind = verge_color_index_[3];
+                    verge_color_index_[3] = verge_color_index_[4];
+                    verge_color_index_[4] = verge_color_index_[1];
+                    verge_color_index_[1] = verge_color_index_[5];
+                    verge_color_index_[5] = ind;
+                } else {
+                    int ind = verge_color_index_[3];
+                    verge_color_index_[3] = verge_color_index_[5];
+                    verge_color_index_[5] = verge_color_index_[1];
+                    verge_color_index_[1] = verge_color_index_[4];
+                    verge_color_index_[4] = ind;
+                }
+            }
+            else {
                 int ind = verge_color_index_[3];
-                verge_color_index_[3] = verge_color_index_[4];
-                verge_color_index_[4] = verge_color_index_[1];
-                verge_color_index_[1] = verge_color_index_[5];
+                verge_color_index_[3] = verge_color_index_[1];
+                verge_color_index_[1] = ind;
+                ind = verge_color_index_[4];
+                verge_color_index_[4] = verge_color_index_[5];
                 verge_color_index_[5] = ind;
-            } else {
-                int ind = verge_color_index_[3];
-                verge_color_index_[3] = verge_color_index_[5];
-                verge_color_index_[5] = verge_color_index_[1];
-                verge_color_index_[1] = verge_color_index_[4];
-                verge_color_index_[4] = ind;
             }
         }
     }
 
-    CubeItem(int posX, int posY, int posZ, int[] verge_color_index_) {
+    CubeItem(int posX, int posY, int posZ, int[] verge_color_index_, int CubeDimX, int CubeDimY, int CubeDimZ, float Scale) {
+
+        mCubeDimX = CubeDimX;
+        mCubeDimY = CubeDimY;
+        mCubeDimZ = CubeDimZ;
+        mScale = Scale;
 
         mPosX = posX;
         mPosY = posY;
@@ -258,12 +297,12 @@ public class CubeItem {
             for (int i = 0; i < verge_color_index.length; i++)
                 verge_color_index[i] = Cube.BLACK;
 
-            if (posX == -1) verge_color_index[3] = Cube.GREEN;
-            if (posX == 1) verge_color_index[1] = Cube.BLUE;
-            if (posY == -1) verge_color_index[5] = Cube.YELLOW;
-            if (posY == 1) verge_color_index[4] = Cube.WHITE;
-            if (posZ == -1) verge_color_index[2] = Cube.ORANGE;
-            if (posZ == 1) verge_color_index[0] = Cube.RED;
+            if (posX == 0) verge_color_index[3] = Cube.GREEN;
+            if (posX == mCubeDimX - 1) verge_color_index[1] = Cube.BLUE;
+            if (posY == 0) verge_color_index[5] = Cube.YELLOW;
+            if (posY == mCubeDimY - 1) verge_color_index[4] = Cube.WHITE;
+            if (posZ == 0) verge_color_index[2] = Cube.ORANGE;
+            if (posZ == mCubeDimZ - 1) verge_color_index[0] = Cube.RED;
         }
         else {
             for (int i = 0; i < verge_color_index.length; i++)

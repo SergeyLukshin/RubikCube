@@ -25,6 +25,11 @@ public class Cube {
     public static final int YELLOW = 5;
     public static final int BLACK = 6;
 
+    public int mCubeDimX = 3;
+    public int mCubeDimY = 3;
+    public int mCubeDimZ = 3;
+    public float mScale = 0.8f;
+
     /*int[] rotateY = {0, 01, 02, 12, 22, 21, 20, 10, 0, 01};
     int[] rotateX = {0, 10, 20, 21, 22, 12, 02, 01, 0, 10};
     int[] rotateZ = {0, 10, 20, 21, 22, 12, 02, 01, 0, 10};
@@ -77,15 +82,28 @@ public class Cube {
         mTexture = TextureUtils.loadTexture(context, R.drawable.cube);
     }
 
-    public synchronized void CubeInit() {
+    public synchronized void CubeInit(int CubeDimX, int CubeDimY, int CubeDimZ) {
+        mCubeDimX = CubeDimX;
+        mCubeDimY = CubeDimY;
+        mCubeDimZ = CubeDimZ;
+
+        int MaxCubeDim = CubeDimX;
+        if (CubeDimY >= CubeDimX && CubeDimY >= CubeDimZ) MaxCubeDim = CubeDimY;
+        if (CubeDimZ >= CubeDimX && CubeDimZ >= CubeDimY) MaxCubeDim = CubeDimZ;
+
+        if (MaxCubeDim == 2) mScale = 1.2f;
+        if (MaxCubeDim == 3) mScale = 1.0f;
+        if (MaxCubeDim == 4) mScale = 0.8f;
+        if (MaxCubeDim == 5) mScale = 0.6f;
+
         if (mItems.size() == 0) {
-            for (int x = 0; x <= 2; x++) {
+            for (int x = 0; x <= mCubeDimX - 1; x++) {
                 mItems.add(new ArrayList<ArrayList<CubeItem>>());
-                for (int y = 0; y <= 2; y++) {
+                for (int y = 0; y <= mCubeDimY - 1; y++) {
                     mItems.get(x).add(new ArrayList<CubeItem>());
-                    for (int z = 0; z <= 2; z++) {
-                        if (x != 1 || y != 1 || z != 1)
-                            mItems.get(x).get(y).add(new CubeItem(x - 1, y - 1, z - 1, null));
+                    for (int z = 0; z <= mCubeDimZ - 1; z++) {
+                        if (x == 0 || x == mCubeDimX - 1 || y == 0 || y == mCubeDimY - 1 || z == 0 || z == mCubeDimZ - 1) // если скраю
+                            mItems.get(x).get(y).add(new CubeItem(x/* - 1*/, y/* - 1*/, z/* - 1*/, null, mCubeDimX, mCubeDimY, mCubeDimZ, mScale));
                         else {
                             mItems.get(x).get(y).add(null);
                         }
@@ -94,13 +112,13 @@ public class Cube {
             }
         }
         else {
-            for (int x = 0; x <= 2; x++) {
+            for (int x = 0; x <= mCubeDimX - 1; x++) {
                 mItems.add(new ArrayList<ArrayList<CubeItem>>());
-                for (int y = 0; y <= 2; y++) {
+                for (int y = 0; y <= mCubeDimY - 1; y++) {
                     mItems.get(x).add(new ArrayList<CubeItem>());
-                    for (int z = 0; z <= 2; z++) {
-                        if (x != 1 || y != 1 || z != 1)
-                            mItems.get(x).get(y).set(z, new CubeItem(x - 1, y - 1, z - 1, null));
+                    for (int z = 0; z <= mCubeDimZ - 1; z++) {
+                        if (x == 0 || x == mCubeDimX - 1 || y == 0 || y == mCubeDimY - 1 || z == 0 || z == mCubeDimZ - 1) // если скраю
+                            mItems.get(x).get(y).set(z, new CubeItem(x/* - 1*/, y/* - 1*/, z/* - 1*/, null, mCubeDimX, mCubeDimY, mCubeDimZ, mScale));
                     }
                 }
             }
@@ -172,13 +190,13 @@ public class Cube {
                         int surface_y_index = -1;
                         int surface_z_index = -1;
 
-                        if (z == 2) surface_z_index = 0;
+                        if (z == mCubeDimZ - 1) surface_z_index = 0;
                         if (z == 0) surface_z_index = 2;
 
-                        if (x == 2) surface_x_index = 1;
+                        if (x == mCubeDimX - 1) surface_x_index = 1;
                         if (x == 0) surface_x_index = 3;
 
-                        if (y == 2) surface_y_index = 4;
+                        if (y == mCubeDimY - 1) surface_y_index = 4;
                         if (y == 0) surface_y_index = 5;
 
                         int color_x = -1;
@@ -213,121 +231,242 @@ public class Cube {
         return true;
     }
 
+    public boolean isEqualDim() {
+        return (mCubeDimX == mCubeDimY && mCubeDimY == mCubeDimZ);
+    }
+
     public boolean StoreItemPosition(Action a) {
 
         if (a == null) return false;
         if (a.m_ActionDirectRotate == Structures.DIRECT_NONE) return false;
 
-        ArrayList<CubeItem> list = new ArrayList<CubeItem>();
-        int x = 0;
-        int y = 0;
-        int z = 0;
+        int dimX = mCubeDimX;
+        int dimY = mCubeDimY;
+        int dimZ = mCubeDimZ;
+        int iter = 0;
+        while (true) {
+            ArrayList<CubeItem> list = new ArrayList<CubeItem>();
+            int x = 0;
+            int y = 0;
+            int z = 0;
+            int dif = 0;
 
-        if (a.m_ActionAxisRotate == Structures.AXE_X) {
-            x = a.m_ActionPosRotate + 1;
+            if (a.m_ActionAxisRotate == Structures.AXE_X) {
+                x = a.m_ActionPosRotate;// + 1;
 
-            y = 0;
-            z = 2;
+                if (dimY <= 1 || dimZ <= 1) break;
 
-            for (int i = 0; i < 8; i++) {
+                int cnt = dimY * dimZ - (dimY - 2) * (dimZ - 2);
+                if (isEqualDim()) dif = dimX - 1;
+                else dif = dimY - 1 + dimZ - 1;
 
-                list.add(mItems.get(x).get(y).get(z));
+                y = iter;
+                z = mCubeDimZ - 1 - iter;
 
-                if (z == 0 && y == 0) {
-                    z++;
-                    continue;
-                }
-                if (z == 0) {
-                    y--;
-                    continue;
-                }
-                if (y == 2) {
-                    z--;
-                    continue;
-                }
-                if (z == 2) {
-                    y++;
+                for (int i = 0; i < cnt; i++) {
+
+                    list.add(mItems.get(x).get(y).get(z));
+
+                    if (i > 0 && y == iter) {
+                        z++;
+                        continue;
+                    }
+                    if (z == iter) {
+                        y--;
+                        continue;
+                    }
+                    if (y == mCubeDimY - 1 - iter) {
+                        z--;
+                        continue;
+                    }
+                    if (z == mCubeDimZ - 1 - iter) {
+                        y++;
+                    }
                 }
             }
+
+            if (a.m_ActionAxisRotate == Structures.AXE_Y) {
+                y = a.m_ActionPosRotate;// + 1;
+
+                if (dimX <= 1 || dimZ <= 1) break;
+
+                int cnt = dimX * dimZ - (dimX - 2) * (dimZ - 2);
+                if (isEqualDim()) dif = dimX - 1;
+                else dif = dimX - 1 + dimZ - 1;
+
+                x = mCubeDimX - 1 - iter;
+                z = iter;
+
+                for (int i = 0; i < cnt; i++) {
+
+                    list.add(mItems.get(x).get(y).get(z));
+
+                    if (i > 0 && z == iter) {
+                        x++;
+                        continue;
+                    }
+                    if (x == iter) {
+                        z--;
+                        continue;
+                    }
+                    if (z == mCubeDimZ - 1 - iter) {
+                        x--;
+                        continue;
+                    }
+                    if (x == mCubeDimX - 1 - iter) {
+                        z++;
+                    }
+                }
+            }
+
+            if (a.m_ActionAxisRotate == Structures.AXE_Z) {
+                z = a.m_ActionPosRotate;// + 1;
+
+                if (dimX <= 1 || dimY <= 1) break;
+
+                int cnt = dimX * dimY - (dimX - 2) * (dimY - 2);
+                if (isEqualDim()) dif = dimX - 1;
+                else dif = dimX - 1 + dimY - 1;
+
+                x = iter;
+                y = mCubeDimY - 1 - iter;
+
+                for (int i = 0; i < cnt; i++) {
+
+                    list.add(mItems.get(x).get(y).get(z));
+
+                    if (i > 0 && x == iter) {
+                        y++;
+                        continue;
+                    }
+                    if (y == iter) {
+                        x--;
+                        continue;
+                    }
+                    if (x == mCubeDimX - 1 - iter) {
+                        y--;
+                        continue;
+                    }
+                    if (y == mCubeDimY - 1 - iter) {
+                        x++;
+                    }
+                }
+            }
+
+            if (list.get(0) == null)
+                break;
+
+            int[] verge_color_indexes_first = list.get(0).verge_color_index.clone();
+            int ind = 0;
+            for (int i = 0; i < list.size(); i++) {
+
+                if (list.get(i) == null)
+                    break;
+
+                x = list.get(i).mPosX;// + 1;
+                y = list.get(i).mPosY;// + 1;
+                z = list.get(i).mPosZ;// + 1;
+
+                if (a.m_ActionDirectRotate == Structures.DIRECT_LEFT) {
+                    ind = i + dif;
+                    if (ind >= list.size()) ind -= list.size();
+                }
+                if (a.m_ActionDirectRotate == Structures.DIRECT_RIGHT) {
+                    ind = i - dif;
+                    if (ind < 0) ind += list.size();
+                }
+
+                int[] verge_color_indexes_ = list.get(ind).verge_color_index.clone();
+                if (ind == 0) verge_color_indexes_ = verge_color_indexes_first;
+
+                CubeItem.Rotate(verge_color_indexes_, a.m_ActionAxisRotate, a.m_ActionDirectRotate, isEqualDim());
+                mItems.get(x).get(y).set(z, new CubeItem(x, y, z, verge_color_indexes_, mCubeDimX, mCubeDimY, mCubeDimZ, mScale));
+                //mItems.get(x).get(y).set(z, new CubeItem(x - 1, y - 1, z - 1, verge_color_indexes_, CubeDim));
+            }
+
+            //if (dim <= 3) break;
+            dimX -= 2;
+            dimY -= 2;
+            dimZ -= 2;
+            iter++;
         }
 
-        if (a.m_ActionAxisRotate == Structures.AXE_Y) {
-            y = a.m_ActionPosRotate + 1;
-
-            x = 2;
-            z = 0;
-
-            for (int i = 0; i < 8; i++) {
-
-                list.add(mItems.get(x).get(y).get(z));
-
-                if (x == 0 && z == 0) {
-                    x++;
-                    continue;
+        // отдельно обрабатываем единичные элементы
+        {
+            ArrayList<CubeItem> list = new ArrayList<CubeItem>();
+            if ((dimY > 1 || dimZ > 1) && a.m_ActionAxisRotate == Structures.AXE_X) {
+                int x = a.m_ActionPosRotate;
+                if (dimY == 1) {
+                    for (int z = 0; z < dimZ; z++) {
+                        list.add(mItems.get(x).get(iter).get(z + iter));
+                    }
                 }
-                if (x == 0) {
-                    z--;
-                    continue;
-                }
-                if (z == 2) {
-                    x--;
-                    continue;
-                }
-                if (x == 2) {
-                    z++;
+                if (dimZ == 1) {
+                    for (int y = 0; y < dimY; y++) {
+                        list.add(mItems.get(x).get(y + iter).get(iter));
+                    }
                 }
             }
-        }
-
-        if (a.m_ActionAxisRotate == Structures.AXE_Z) {
-            z = a.m_ActionPosRotate + 1;
-
-            x = 0;
-            y = 2;
-
-            for (int i = 0; i < 8; i++) {
-
-                list.add(mItems.get(x).get(y).get(z));
-
-                if (y == 0 && x == 0) {
-                    y++;
-                    continue;
+            if ((dimX > 1 || dimZ > 1) && a.m_ActionAxisRotate == Structures.AXE_Y) {
+                int y = a.m_ActionPosRotate;
+                if (dimX == 1) {
+                    for (int z = 0; z < dimZ; z++) {
+                        list.add(mItems.get(iter).get(y).get(z + iter));
+                    }
                 }
-                if (y == 0) {
-                    x--;
-                    continue;
-                }
-                if (x == 2) {
-                    y--;
-                    continue;
-                }
-                if (y == 2) {
-                    x++;
+                if (dimZ == 1) {
+                    for (int x = 0; x < dimX; x++) {
+                        list.add(mItems.get(x + iter).get(y).get(iter));
+                    }
                 }
             }
-        }
-
-        int[] verge_color_indexes_first = list.get(0).verge_color_index.clone();
-        int ind = 0;
-        for (int i = 0; i < list.size(); i++) {
-            x = list.get(i).mPosX + 1;
-            y = list.get(i).mPosY + 1;
-            z = list.get(i).mPosZ + 1;
-
-            if (a.m_ActionDirectRotate == Structures.DIRECT_LEFT){
-                ind = i + 2;
-                if (ind >= list.size()) ind -= list.size();
-            }
-            if (a.m_ActionDirectRotate == Structures.DIRECT_RIGHT){
-                ind = i - 2;
-                if (ind < 0) ind += list.size();
+            if ((dimX > 1 || dimY > 1) && a.m_ActionAxisRotate == Structures.AXE_Z) {
+                int z = a.m_ActionPosRotate;
+                if (dimX == 1) {
+                    for (int y = 0; y < dimY; y++) {
+                        list.add(mItems.get(iter).get(y + iter).get(z));
+                    }
+                }
+                if (dimY == 1) {
+                    for (int x = 0; x < dimX; x++) {
+                        list.add(mItems.get(x + iter).get(iter).get(z));
+                    }
+                }
             }
 
-            int[] verge_color_indexes_ = list.get(ind).verge_color_index.clone();
-            if (ind == 0) verge_color_indexes_ = verge_color_indexes_first;
+            for (int i = 0; i < list.size() / 2; i++) {
+                if (list.get(i) == null)
+                    break;
 
-            CubeItem.Rotate(verge_color_indexes_, a.m_ActionAxisRotate, a.m_ActionDirectRotate);
-            mItems.get(x).get(y).set(z, new CubeItem(x - 1, y - 1, z - 1, verge_color_indexes_));
+                int x1 = list.get(i).mPosX;// + 1;
+                int y1 = list.get(i).mPosY;// + 1;
+                int z1 = list.get(i).mPosZ;// + 1;
+
+                int x2 = list.get(list.size() - i - 1).mPosX;// + 1;
+                int y2 = list.get(list.size() - i - 1).mPosY;// + 1;
+                int z2 = list.get(list.size() - i - 1).mPosZ;// + 1;
+
+                int[] verge_color_indexes1_ = list.get(i).verge_color_index.clone();
+                int[] verge_color_indexes2_ = list.get(list.size() - i - 1).verge_color_index.clone();
+
+                CubeItem.Rotate(verge_color_indexes1_, a.m_ActionAxisRotate, a.m_ActionDirectRotate, isEqualDim());
+                CubeItem.Rotate(verge_color_indexes2_, a.m_ActionAxisRotate, a.m_ActionDirectRotate, isEqualDim());
+
+                mItems.get(x1).get(y1).set(z1, new CubeItem(x1, y1, z1, verge_color_indexes2_, mCubeDimX, mCubeDimY, mCubeDimZ, mScale));
+                mItems.get(x2).get(y2).set(z2, new CubeItem(x2, y2, z2, verge_color_indexes1_, mCubeDimX, mCubeDimY, mCubeDimZ, mScale));
+            }
+
+            // средняя кнопка
+            if ((list.size() / 2) * 2 != list.size()) {
+                int index = list.size() / 2;
+                int x = list.get(index).mPosX;// + 1;
+                int y = list.get(index).mPosY;// + 1;
+                int z = list.get(index).mPosZ;// + 1;
+
+                int[] verge_color_indexes_ = list.get(index).verge_color_index.clone();
+                CubeItem.Rotate(verge_color_indexes_, a.m_ActionAxisRotate, a.m_ActionDirectRotate, isEqualDim());
+                mItems.get(x).get(y).set(z, new CubeItem(x, y, z, verge_color_indexes_, mCubeDimX, mCubeDimY, mCubeDimZ, mScale));
+            }
         }
 
         if (a.mFromUser) {
@@ -410,6 +549,13 @@ public class Cube {
         return null;
     }*/
 
+    public int GetLimitAngle() {
+        if (isEqualDim())
+            return 90;
+        else
+            return 180;
+    }
+
     public Action GetAction(int[] item, float[] start, float[] end/*, boolean bSelect*/)
     {
         float[] ray;
@@ -423,7 +569,13 @@ public class Cube {
         ray = Surface.Sub(end, start);
         float min_dist = Float.MAX_VALUE;
 
-        int[] res = {-1, -1, -1, -1};
+        //int[] res = {-1, -1, -1, -1};
+
+        if (item.length != 4) return null;
+        if (item[0] < 0 || mItems.size() <= item[0])  return null;
+        if (item[1] < 0 || mItems.get(item[0]).size() <= item[1])  return null;
+        if (item[2] < 0 || mItems.get(item[0]).get(item[1]).size() <= item[2])  return null;
+
         CubeItem pi = mItems.get(item[0]).get(item[1]).get(item[2]);
         int vertex = item[3] / 2;
 
@@ -457,9 +609,9 @@ public class Cube {
                     a.m_ActionAxisRotate = ti.m_AxisRotate;
                     a.m_ActionDirectRotate = ti.m_DirectRotate;
 
-                    if (a.m_ActionAxisRotate == Structures.AXE_X) a.m_ActionPosRotate = item[0] - 1;
-                    if (a.m_ActionAxisRotate == Structures.AXE_Y) a.m_ActionPosRotate = item[1] - 1;
-                    if (a.m_ActionAxisRotate == Structures.AXE_Z) a.m_ActionPosRotate = item[2] - 1;
+                    if (a.m_ActionAxisRotate == Structures.AXE_X) a.m_ActionPosRotate = item[0] /*- 1*/;
+                    if (a.m_ActionAxisRotate == Structures.AXE_Y) a.m_ActionPosRotate = item[1] /*- 1*/;
+                    if (a.m_ActionAxisRotate == Structures.AXE_Z) a.m_ActionPosRotate = item[2] /*- 1*/;
                 }
             }
         }
@@ -552,7 +704,7 @@ public class Cube {
                         for (int i = 0; i < ci.verge_color_index.length; i++) {
                             str = str + String.valueOf(ci.verge_color_index[i]);
                         }
-                        ed.putString("CubeVertexColor" + String.valueOf(x) + String.valueOf(y) + String.valueOf(z), str);
+                        ed.putString("CubeVertexColor" + String.valueOf(mCubeDimX) + String.valueOf(mCubeDimY) + String.valueOf(mCubeDimZ) + String.valueOf(x) + String.valueOf(y) + String.valueOf(z), str);
                     }
                 }
             }
@@ -565,12 +717,12 @@ public class Cube {
                 for (int z = 0; z < mItems.get(x).get(y).size(); z++) {
                     CubeItem ci = mItems.get(x).get(y).get(z);
                     if (ci != null) {
-                        String str = sPref.getString("CubeVertexColor" + String.valueOf(x) + String.valueOf(y) + String.valueOf(z), "");
+                        String str = sPref.getString("CubeVertexColor" + String.valueOf(mCubeDimX) + String.valueOf(mCubeDimY) + String.valueOf(mCubeDimZ) + String.valueOf(x) + String.valueOf(y) + String.valueOf(z), "");
                         if (str != "") {
                             int[] verge_color_indexes_ = {Cube.BLACK, Cube.BLACK, Cube.BLACK, Cube.BLACK, Cube.BLACK, Cube.BLACK};
                             for (int i = 0; i < str.length(); i++)
                                 verge_color_indexes_[i] = Integer.valueOf(str.substring(i, i + 1));
-                            mItems.get(x).get(y).set(z, new CubeItem(x - 1, y - 1, z - 1, verge_color_indexes_));
+                            mItems.get(x).get(y).set(z, new CubeItem(x/* - 1*/, y/* - 1*/, z/* - 1*/, verge_color_indexes_, mCubeDimX, mCubeDimY, mCubeDimZ, mScale));
                         }
                     }
                 }

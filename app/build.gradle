@@ -1,14 +1,21 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'myapps'
+            keyPassword '576274'
+            storeFile file('D:/Sergey/AndroidProjects/Keys/my_key_store.jks')
+            storePassword 'oldhome'
+        }
+    }
     compileSdkVersion 26
-    buildToolsVersion "25.0.3"
     defaultConfig {
         applicationId "ru.adoon.rubikcube"
         minSdkVersion 19
         targetSdkVersion 26
-        versionCode 2
-        versionName "1.1"
+        versionCode 8
+        versionName "1.7"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

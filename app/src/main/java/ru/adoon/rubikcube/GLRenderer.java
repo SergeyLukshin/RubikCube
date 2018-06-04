@@ -93,24 +93,45 @@ public class GLRenderer implements Renderer {
         data.SetContext(context);
 
         if (m_width > m_height) {
-            data.mSettingsSprite.SetRatio(m_width, m_height,  m_ratio, 1);
-            data.mBackSprite.SetRatio(m_width, m_height,  m_ratio, 1);
-            data.mMenu.SetRatio(m_width, m_height,  m_ratio, 1);
-            data.mClock.SetRatio(m_width, m_height,  m_ratio, 1);
-        }
-        else {
+            data.mSettingsSprite.SetRatio(m_width, m_height, m_ratio, 1);
+            data.mBackSprite.SetRatio(m_width, m_height, m_ratio, 1);
+            data.mMenu.SetRatio(m_width, m_height, m_ratio, 1);
+            data.mClock.SetRatio(m_width, m_height, m_ratio, 1);
+            data.mLockSprite.SetRatio(m_width, m_height, m_ratio, 1);
+        } else {
             data.mSettingsSprite.SetRatio(m_width, m_height, 1, m_ratio);
             data.mBackSprite.SetRatio(m_width, m_height, 1, m_ratio);
             data.mMenu.SetRatio(m_width, m_height, 1, m_ratio);
-            data.mClock.SetRatio(m_width, m_height,  1, m_ratio);
+            data.mClock.SetRatio(m_width, m_height, 1, m_ratio);
+            data.mLockSprite.SetRatio(m_width, m_height, 1, m_ratio);
         }
     }
 
-    public void ActionCubeMix(int cnt) {
+    public void AddHistory (Action ah) {
+        mHistory.add(ah);
+        if (data != null)
+            data.mCntSteps ++;
+    }
+
+    public void RemoveLastHistory () {
+        if (mHistory.size() > 0) {
+            mHistory.remove(mHistory.size() - 1);
+            if (data != null)
+                data.mCntSteps--;
+        }
+    }
+
+    public void ClearHistory() {
+        mHistory.clear();
+        if (data != null)
+            data.mCntSteps = 0;
+    }
+
+    public void ActionFigureMix(int cnt) {
 
         mPause = true;
 
-        mHistory.clear();
+        ClearHistory();
         //data.mCube.CubeInit();
 
         Random r = new Random();
@@ -118,7 +139,7 @@ public class GLRenderer implements Renderer {
             Action a = new Action(false);
             a.mAngleDif = data.mFigure.GetLimitAngle();
             a.m_ActionAxisRotate = r.nextInt(data.mFigure.GetMaxAxisCnt());
-            a.m_ActionPosRotate = data.mFigure.mType == 0 ? r.nextInt(3) - 1 : r.nextInt(3);
+            a.m_ActionPosRotate = data.mFigure.GetRndPosRotate(r, a.m_ActionAxisRotate);//data.mFigure.mType == 0 ? r.nextInt(data.mDim) : r.nextInt(3);
             a.m_ActionDirectRotate = r.nextInt(2);
             if (a.m_ActionDirectRotate == Structures.DIRECT_NONE) a.m_ActionDirectRotate = Structures.DIRECT_LEFT;
             mActions.AddNoStart(a);
@@ -206,6 +227,13 @@ public class GLRenderer implements Renderer {
 
         if (mPause) return;
 
+        if (data == null) return;
+        if (data.mBackground == null) return;
+        if (data.mClock == null) return;
+        if (data.mMenu == null) return;
+        if (data.mBackSprite == null) return;
+        if (data.mLockSprite == null) return;
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (mActions.ActionIsEnable()) mActions.ActionExec();
@@ -217,15 +245,19 @@ public class GLRenderer implements Renderer {
             data.mSettingsSprite.Draw();
             if (mHistory.size() > 0)
                 data.mBackSprite.Draw();
+            data.mLockSprite.Draw();
         }
 
         Camera.setLookAtM();
 
         glDisable(GL_BLEND);
         glUseProgram(programIdCube);
-        if (mActions.list.size() > 0) {
-            Action a = mActions.list.get(0).clone();
-            data.mFigure.Draw(a);
+        if (mActions.list != null && mActions.list.size() > 0) {
+            Action a_ = mActions.list.get(0);
+            if (a_ != null) {
+                Action a = a_.clone();
+                data.mFigure.Draw(a);
+            }
         }
         else
             data.mFigure.Draw(null);
@@ -242,8 +274,11 @@ public class GLRenderer implements Renderer {
             if (mActions.list.size() == 0)
                 data.SaveData();
             if (res) {
-                mHistory.clear();
-                data.mMenu.MenuShow(Menu.menu_do_complete);
+                if (data.mClock.IsEnable())
+                    data.mMenu.MenuShow(Menu.menu_do_complete);
+                else
+                    data.mMenu.MenuShow(Menu.menu_do_complete_no_time);
+                ClearHistory();
             }
         }
     }
@@ -259,7 +294,7 @@ public class GLRenderer implements Renderer {
             mActions.Add(a);
             Action ah = a.clone();
             ah.setFromUser(false);
-            mHistory.add(ah);
+            AddHistory(ah);
         }
     }
 

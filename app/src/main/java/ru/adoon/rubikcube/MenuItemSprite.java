@@ -74,11 +74,13 @@ public class MenuItemSprite {
     }
 
     public void SetContext(Context context) {
-        TextureUtils.deleteTexture(texture);
+        if (mTextureID > 0)
+            TextureUtils.deleteTexture(texture);
         if (mTextureID2 > 0)
             TextureUtils.deleteTexture(texture2);
 
-        texture = TextureUtils.loadTexture(context, mTextureID);
+        if (mTextureID > 0)
+            texture = TextureUtils.loadTexture(context, mTextureID);
         if (mTextureID2 > 0)
             texture2 = TextureUtils.loadTexture(context, mTextureID2);
 
@@ -118,7 +120,8 @@ public class MenuItemSprite {
         mTextureID = textureID;
         mTextureID2 = textureID2;
 
-        texture = TextureUtils.loadTexture(context, textureID);
+        if (textureID > 0)
+            texture = TextureUtils.loadTexture(context, textureID);
         if (textureID2 > 0)
             texture2 = TextureUtils.loadTexture(context, textureID2);
         mIndex = index;
@@ -138,6 +141,10 @@ public class MenuItemSprite {
 
     public void SetTexture(int pos) {
         mTextureIndex = pos;
+    }
+
+    public float GetPosY() {
+        return 1 - (mMarginGL + mHeightGL / 2 + mIndex * (mHeightGL + mDistGL));
     }
 
     public void SetPos(float move_dist) {
@@ -161,6 +168,9 @@ public class MenuItemSprite {
     }
 
     public void Draw() {
+
+        if (mTextureID <= 0) return;
+
         vertexData.position(0);
         glVertexAttribPointer(SpriteItemLocation.aPositionLocation, POSITION_COUNT, GL_FLOAT,
                 false, STRIDE, vertexData);

@@ -16,21 +16,26 @@ public class MainData {
     public Background mBackground = null;
     public SettingsSprite mSettingsSprite = null;
     public BackSprite mBackSprite = null;
+    public LockSprite mLockSprite = null;
     public Clock mClock = null;
     public Menu mMenu = null;
     public Figure mFigure = null;
+    public int mRotateType = 0;
+    public boolean mDoubleTap = false;
+    public int mCntSteps = 0;
 
     MainData(Context ctx) {
 
         context = ctx;
 
         mSettingsSprite = new SettingsSprite(ctx);
+        mLockSprite = new LockSprite(ctx);
         mBackSprite = new BackSprite(ctx);
         mBackground = new Background(ctx, false);
         mClock = new Clock(ctx);
         mMenu = new Menu(ctx);
         mFigure = new Figure(ctx);
-        mFigure.FigureInit();
+        //mFigure.FigureInit();
         LoadData();
     }
 
@@ -39,6 +44,7 @@ public class MainData {
 
         mFigure.SetContext(ctx);
         mSettingsSprite.SetContext(ctx);
+        mLockSprite.SetContext(ctx);
         mBackSprite.SetContext(ctx);
         mBackground.SetContext(ctx);
         mClock.SetContext(ctx);
@@ -68,15 +74,30 @@ public class MainData {
 
         ed.putFloat("Camera_Scale", Camera.mScale);
 
-        ed.putLong("Clock_TimeStart", mClock.mTimeStart);
-        ed.putLong("Clock_Duration", mClock.mDuration);
-        ed.putBoolean("Clock_Pause", mClock.mPause);
+        if (mClock != null) {
+            ed.putLong("Clock_TimeStart", mClock.mTimeStart);
+            ed.putLong("Clock_Duration", mClock.mDuration);
+            ed.putBoolean("Clock_Pause", mClock.mPause);
+        }
 
-        ed.putInt("Figure_Type", mFigure.mType);
-        ed.putBoolean("Menu_IsEnable", mMenu.MenuIsEnable());
+        if (mLockSprite != null) {
+            ed.putLong("Lock_Type", mLockSprite.GetType());
+        }
 
-        // CubeItemOld verge_color_index
-        mFigure.SavePos(ed);
+        if (mFigure != null) {
+            ed.putInt("Figure_Type_", mFigure.mFigureType);
+            ed.putInt("Figure_SubType", mFigure.mFigureSubType);
+        }
+
+        ed.putInt("Rotation_Type", mRotateType);
+        ed.putBoolean("Double_Tap", mDoubleTap);
+        ed.putInt("Cnt_Steps", mCntSteps);
+
+        if (mMenu != null)
+            ed.putBoolean("Menu_IsEnable", mMenu.MenuIsEnable());
+
+        if (mFigure != null)
+            mFigure.SavePos(ed);
 
         ed.commit();
     }
@@ -111,22 +132,52 @@ public class MainData {
         }
         Camera.mScale  = sPref.getFloat("Camera_Scale", 1);
 
-        mClock.mTimeStart = sPref.getLong("Clock_TimeStart", -1);
-        mClock.mDuration = sPref.getLong("Clock_Duration", 0);
-        mClock.mPause = sPref.getBoolean("Clock_Pause", false);
-        if (mClock.mTimeStart > 0) mClock.mTimeStart = SystemClock.uptimeMillis() - mClock.mDuration;
-        boolean isEnabled =  sPref.getBoolean("Menu_IsEnable", false);
-
-        mFigure.SetFigure(sPref.getInt("Figure_Type", 0));
-
-        if (isEnabled && !mMenu.MenuIsEnable()) mMenu.MenuShow(Menu.menu_do_main);
-        if (!isEnabled && mMenu.MenuIsEnable()) mMenu.MenuClose();
-
-        if (mClock.IsEnable() && !mMenu.MenuIsEnable()) {
-            //mClock.Pause();
-            mMenu.MenuShow(Menu.menu_do_main);
+        if (mClock != null) {
+            mClock.mTimeStart = sPref.getLong("Clock_TimeStart", -1);
+            mClock.mDuration = sPref.getLong("Clock_Duration", 0);
+            mClock.mPause = sPref.getBoolean("Clock_Pause", false);
+            if (mClock.mTimeStart > 0)
+                mClock.mTimeStart = SystemClock.uptimeMillis() - mClock.mDuration;
         }
 
-        mFigure.LoadPos(sPref);
+        if (mLockSprite != null) {
+            mLockSprite.SetType((int)sPref.getLong("Lock_Type", 1));
+        }
+
+        boolean isEnabled =  sPref.getBoolean("Menu_IsEnable", false);
+
+        if (mFigure != null) {
+            mFigure.SetFigure(sPref.getInt("Figure_Type_", Structures.CUBE), sPref.getInt("Figure_SubType", 1));
+        }
+
+        mRotateType = sPref.getInt("Rotation_Type", 0);
+        mDoubleTap = sPref.getBoolean("Double_Tap", false);
+        mCntSteps = sPref.getInt("Cnt_Steps", 0);
+
+        if (mClock != null && mMenu != null) {
+            if (isEnabled && !mMenu.MenuIsEnable()) {
+                mMenu.MenuInit();
+                mMenu.MenuShow(Menu.menu_do_main_no_exit);
+                if (!mClock.IsEnable())
+                    mMenu.SetTexture(Menu.menu_do_main_timer, 0);
+                else
+                    mMenu.SetTexture(Menu.menu_do_main_timer, 1);
+            }
+            if (!isEnabled && mMenu.MenuIsEnable()) mMenu.MenuClose();
+
+            if (mClock.IsEnable() && !mMenu.MenuIsEnable()) {
+                //mClock.Pause();
+                mMenu.MenuInit();
+                mMenu.MenuShow(Menu.menu_do_main_no_exit);
+
+                if (!mClock.IsEnable())
+                    mMenu.SetTexture(Menu.menu_do_main_timer, 0);
+                else
+                    mMenu.SetTexture(Menu.menu_do_main_timer, 1);
+            }
+        }
+
+        if (mFigure != null)
+            mFigure.LoadPos(sPref);
     }
 }
