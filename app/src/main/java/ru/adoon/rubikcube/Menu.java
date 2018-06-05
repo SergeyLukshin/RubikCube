@@ -24,6 +24,7 @@ public class Menu {
     public static final int menu_do_size_cube = 8;
     public static final int menu_do_size_pyramid = 9;
     public static final int menu_do_size_dcube = 10;
+    public static final int menu_do_size_empty_cube = 11;
 
     public static final int menu_none = -1;
 
@@ -57,6 +58,7 @@ public class Menu {
     public static final int menu_do_figure_cube = 0;
     public static final int menu_do_figure_pyramid = 1;
     public static final int menu_do_figure_domino_cube = 2;
+    public static final int menu_do_figure_empty_cube = 3;
 
     public static final int menu_do_size_cube_222 = 0;
     public static final int menu_do_size_cube_333 = 1;
@@ -66,6 +68,7 @@ public class Menu {
     public static final int menu_do_size_pyramid_222 = 0;
     public static final int menu_do_size_pyramid_333 = 1;
     public static final int menu_do_size_pyramid_444 = 2;
+    public static final int menu_do_size_pyramid_555 = 3;
 
     public static final int menu_do_size_dcube_233 = 0;
     public static final int menu_do_size_dcube_244 = 1;
@@ -73,6 +76,9 @@ public class Menu {
     public static final int menu_do_size_dcube_255 = 3;
     public static final int menu_do_size_dcube_355 = 4;
     public static final int menu_do_size_dcube_455 = 5;
+
+    public static final int menu_do_size_empty_cube_333 = 0;
+    public static final int menu_do_size_empty_cube_555 = 1;
 
     public static final int menu_do_rotate_rotate_type = 0;
     public static final int menu_do_rotate_rotate1 = 1;
@@ -157,9 +163,10 @@ public class Menu {
 
         list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_figure_cube, 3, 1f * 210f / 460f, R.drawable.menu_cube, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_figure_pyramid, 3, 1f * 370f / 460f, R.drawable.menu_pyramid, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_figure_domino_cube, 3, 1f * 420f / 460f, R.drawable.menu_dcube, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_figure_cube, 4, 1f * 210f / 460f, R.drawable.menu_cube, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_figure_pyramid, 4, 1f * 370f / 460f, R.drawable.menu_pyramid, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_figure_domino_cube, 4, 1f * 420f / 460f, R.drawable.menu_dcube, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_figure_empty_cube, 4, 1f * 360f / 460f, R.drawable.menu_empty_cube, 0, true));
         }
         menu.add(list);
 
@@ -203,9 +210,10 @@ public class Menu {
 
         list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_size_pyramid_222, 3, 1f * 240f / 460f, R.drawable.menu_size222, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_pyramid_333, 3, 1f * 240f / 460f, R.drawable.menu_size333, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_pyramid_444, 3, 1f * 240f / 460f, R.drawable.menu_size444, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_size_pyramid_222, 4, 1f * 240f / 460f, R.drawable.menu_size222, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_size_pyramid_333, 4, 1f * 240f / 460f, R.drawable.menu_size333, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_size_pyramid_444, 4, 1f * 240f / 460f, R.drawable.menu_size444, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_size_pyramid_555, 4, 1f * 240f / 460f, R.drawable.menu_size555, 0, true));
         }
         menu.add(list);
 
@@ -217,6 +225,13 @@ public class Menu {
             list.add(new MenuItemSprite(ctx, menu_do_size_dcube_255, 6, 1f * 240f / 460f, R.drawable.menu_size255, 0, true));
             list.add(new MenuItemSprite(ctx, menu_do_size_dcube_355, 6, 1f * 240f / 460f, R.drawable.menu_size355, 0, true));
             list.add(new MenuItemSprite(ctx, menu_do_size_dcube_455, 6, 1f * 240f / 460f, R.drawable.menu_size455, 0, true));
+        }
+        menu.add(list);
+
+        list = new ArrayList<MenuItemSprite>();
+        {
+            list.add(new MenuItemSprite(ctx, menu_do_size_empty_cube_333, 2, 1f * 240f / 460f, R.drawable.menu_size333, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_size_empty_cube_555, 2, 1f * 240f / 460f, R.drawable.menu_size555, 0, true));
         }
         menu.add(list);
 

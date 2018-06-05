@@ -16,11 +16,13 @@ public class Figure {
     private ArrayList<Cube> mCubeList = null;
     private ArrayList<Pyramid> mPyramidList = null;
     private ArrayList<Cube> mDominoCubeList = null;
+    private ArrayList<Cube> mEmptyCubeList = null;
     public int mFigureType = Structures.CUBE;
     public int mFigureSubType = 1;
     public int mCntCubes = 4;
-    public int mCntPyramides = 3;
+    public int mCntPyramides = 4;
     public int mCntDominoCubes = 6;
+    public int mCntEmptyCubes = 2;
 
     Figure(Context context) {
         //mCube = new Cube(context);
@@ -37,6 +39,11 @@ public class Figure {
         mDominoCubeList = new ArrayList<Cube>();
         for (int i = 0; i < mCntDominoCubes; i++) {
             mDominoCubeList.add(new Cube(context));
+        }
+
+        mEmptyCubeList = new ArrayList<Cube>();
+        for (int i = 0; i < mCntEmptyCubes; i++) {
+            mEmptyCubeList.add(new Cube(context));
         }
     }
 
@@ -70,40 +77,56 @@ public class Figure {
                     return mDominoCubeList.get(mFigureSubType).mCubeDimZ;
             }
         }
+        if (FigureType == Structures.EMPTY_CUBE) {
+            switch (axis) {
+                case Structures.AXE_X:
+                    return mEmptyCubeList.get(mFigureSubType).mCubeDimX;
+                case Structures.AXE_Y:
+                    return mEmptyCubeList.get(mFigureSubType).mCubeDimY;
+                case Structures.AXE_Z:
+                    return mEmptyCubeList.get(mFigureSubType).mCubeDimZ;
+            }
+        }
         return 0;
     }
 
     public void FigureInit() {
         if (mFigureType == Structures.CUBE) {
-            for (int i = 0; i < mCntCubes; i++)
-                mCubeList.get(i).CubeInit(i + 2, i + 2, i + 2);
+            //for (int i = 0; i < mCntCubes; i++)
+                mCubeList.get(mFigureSubType).CubeInit(mFigureSubType + 2, mFigureSubType + 2, mFigureSubType + 2, false);
         }
         if (mFigureType == Structures.PYRAMID) {
-            for (int i = 0; i < mCntPyramides; i++)
-                mPyramidList.get(i).PyramidInit(i + 2);
+            //for (int i = 0; i < mCntPyramides; i++)
+                mPyramidList.get(mFigureSubType).PyramidInit(mFigureSubType + 2);
         }
         if (mFigureType == Structures.DOMINO_CUBE) {
-            for (int i = 0; i < mCntDominoCubes; i++)
-                switch(i) {
+            //for (int i = 0; i < mCntDominoCubes; i++)
+                switch(mFigureSubType) {
                     case 0:
-                        mDominoCubeList.get(i).CubeInit(3, 2, 3);
+                        mDominoCubeList.get(mFigureSubType).CubeInit(3, 2, 3, false);
                         break;
                     case 1:
-                        mDominoCubeList.get(i).CubeInit(4, 2, 4);
+                        mDominoCubeList.get(mFigureSubType).CubeInit(4, 2, 4, false);
                         break;
                     case 2:
-                        mDominoCubeList.get(i).CubeInit(4, 3, 4);
+                        mDominoCubeList.get(mFigureSubType).CubeInit(4, 3, 4, false);
                         break;
                     case 3:
-                        mDominoCubeList.get(i).CubeInit(5, 2, 5);
+                        mDominoCubeList.get(mFigureSubType).CubeInit(5, 2, 5, false);
                         break;
                     case 4:
-                        mDominoCubeList.get(i).CubeInit(5, 3, 5);
+                        mDominoCubeList.get(mFigureSubType).CubeInit(5, 3, 5, false);
                         break;
                     case 5:
-                        mDominoCubeList.get(i).CubeInit(5, 4, 5);
+                        mDominoCubeList.get(mFigureSubType).CubeInit(5, 4, 5, false);
                         break;
                 }
+        }
+        if (mFigureType == Structures.EMPTY_CUBE) {
+            if (mFigureSubType == 0)
+                mEmptyCubeList.get(mFigureSubType).CubeInit(3, 3, 3, true);
+            if (mFigureSubType == 1)
+                mEmptyCubeList.get(mFigureSubType).CubeInit(5, 5, 5, true);
         }
     }
 
@@ -114,24 +137,36 @@ public class Figure {
             mPyramidList.get(i).SetContext(context);
         for (int i = 0; i < mCntDominoCubes; i++)
             mDominoCubeList.get(i).SetContext(context);
+        for (int i = 0; i < mCntEmptyCubes; i++)
+            mEmptyCubeList.get(i).SetContext(context);
     }
 
     public void SavePos(SharedPreferences.Editor ed) {
-        for (int i = 0; i < mCntCubes; i++)
-            mCubeList.get(i).SavePos(ed);
-        for (int i = 0; i < mCntPyramides; i++)
-            mPyramidList.get(i).SavePos(ed);
-        for (int i = 0; i < mCntDominoCubes; i++)
-            mDominoCubeList.get(i).SavePos(ed);
+        //for (int i = 0; i < mCntCubes; i++)
+        if (mFigureType == Structures.CUBE)
+            mCubeList.get(mFigureSubType).SavePos(ed);
+        //for (int i = 0; i < mCntPyramides; i++)
+        if (mFigureType == Structures.PYRAMID)
+            mPyramidList.get(mFigureSubType).SavePos(ed);
+        //for (int i = 0; i < mCntDominoCubes; i++)
+        if (mFigureType == Structures.DOMINO_CUBE)
+            mDominoCubeList.get(mFigureSubType).SavePos(ed);
+        if (mFigureType == Structures.EMPTY_CUBE)
+            mEmptyCubeList.get(mFigureSubType).SavePos(ed);
     }
 
     public void LoadPos(SharedPreferences sPref) {
-        for (int i = 0; i < mCntCubes; i++)
-            mCubeList.get(i).LoadPos(sPref);
-        for (int i = 0; i < mCntPyramides; i++)
-            mPyramidList.get(i).LoadPos(sPref);
-        for (int i = 0; i < mCntDominoCubes; i++)
-            mDominoCubeList.get(i).LoadPos(sPref);
+        //for (int i = 0; i < mCntCubes; i++)
+        if (mFigureType == Structures.CUBE)
+            mCubeList.get(mFigureSubType).LoadPos(sPref);
+        //for (int i = 0; i < mCntPyramides; i++)
+        if (mFigureType == Structures.PYRAMID)
+            mPyramidList.get(mFigureSubType).LoadPos(sPref);
+        //for (int i = 0; i < mCntDominoCubes; i++)
+        if (mFigureType == Structures.DOMINO_CUBE)
+            mDominoCubeList.get(mFigureSubType).LoadPos(sPref);
+        if (mFigureType == Structures.EMPTY_CUBE)
+            mEmptyCubeList.get(mFigureSubType).LoadPos(sPref);
     }
 
     public int GetRndPosRotate(Random r, int axis) {
@@ -139,7 +174,7 @@ public class Figure {
     }
 
     public int GetMaxAxisCnt() {
-        if (mFigureType == Structures.CUBE || mFigureType == Structures.DOMINO_CUBE)
+        if (mFigureType == Structures.CUBE || mFigureType == Structures.DOMINO_CUBE || mFigureType == Structures.EMPTY_CUBE)
             return 3;
         if (mFigureType == Structures.PYRAMID)
             return 4;
@@ -154,6 +189,8 @@ public class Figure {
             return 120;
         if (mFigureType == Structures.DOMINO_CUBE)
             return mDominoCubeList.get(mFigureSubType).GetLimitAngle();
+        if (mFigureType == Structures.EMPTY_CUBE)
+            return mEmptyCubeList.get(mFigureSubType).GetLimitAngle();
 
         return 0;
     }
@@ -165,6 +202,8 @@ public class Figure {
             return mPyramidList.get(mFigureSubType).GetSelectItem(start, end);
         if (mFigureType == Structures.DOMINO_CUBE)
             return mDominoCubeList.get(mFigureSubType).GetSelectItem(start, end);
+        if (mFigureType == Structures.EMPTY_CUBE)
+            return mEmptyCubeList.get(mFigureSubType).GetSelectItem(start, end);
 
         return null;
     }
@@ -176,6 +215,8 @@ public class Figure {
             return mPyramidList.get(mFigureSubType).GetAction(item, start, end);
         if (mFigureType == Structures.DOMINO_CUBE)
             return mDominoCubeList.get(mFigureSubType).GetAction(item, start, end);
+        if (mFigureType == Structures.EMPTY_CUBE)
+            return mEmptyCubeList.get(mFigureSubType).GetAction(item, start, end);
 
         return null;
     }
@@ -187,6 +228,8 @@ public class Figure {
             mPyramidList.get(mFigureSubType).Draw(a);
         if (mFigureType == Structures.DOMINO_CUBE)
             mDominoCubeList.get(mFigureSubType).Draw(a);
+        if (mFigureType == Structures.EMPTY_CUBE)
+            mEmptyCubeList.get(mFigureSubType).Draw(a);
     }
 
     /*public Action GetAction(int[] CubeItem1, int[] CubeItem2, Bool bNeedRecalc) {
@@ -201,6 +244,8 @@ public class Figure {
             return mPyramidList.get(mFigureSubType).StoreItemPosition(a);
         if (mFigureType == Structures.DOMINO_CUBE)
             return mDominoCubeList.get(mFigureSubType).StoreItemPosition(a);
+        if (mFigureType == Structures.EMPTY_CUBE)
+            return mEmptyCubeList.get(mFigureSubType).StoreItemPosition(a);
 
         return false;
     }
@@ -212,5 +257,7 @@ public class Figure {
             mPyramidList.get(mFigureSubType).CreateExVertices(item, point);
         if (mFigureType == Structures.DOMINO_CUBE)
             mDominoCubeList.get(mFigureSubType).CreateExVertices(item, point);
+        if (mFigureType == Structures.EMPTY_CUBE)
+            mEmptyCubeList.get(mFigureSubType).CreateExVertices(item, point);
     }
 }

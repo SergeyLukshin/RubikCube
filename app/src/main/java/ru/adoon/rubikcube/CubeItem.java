@@ -39,6 +39,7 @@ public class CubeItem {
     public int mCubeDimZ;
 
     public boolean m_bSelect = false;
+    public boolean m_bVisible = true;
 
     public int[] verge_color_index = new int[6];
     //private float[] vecRotate = new float[4];
@@ -274,12 +275,14 @@ public class CubeItem {
         }
     }
 
-    CubeItem(int posX, int posY, int posZ, int[] verge_color_index_, int CubeDimX, int CubeDimY, int CubeDimZ, float Scale) {
+    CubeItem(int posX, int posY, int posZ, int[] verge_color_index_, int CubeDimX, int CubeDimY, int CubeDimZ, float Scale, boolean bVisible) {
 
         mCubeDimX = CubeDimX;
         mCubeDimY = CubeDimY;
         mCubeDimZ = CubeDimZ;
         mScale = Scale;
+
+        m_bVisible = bVisible;
 
         mPosX = posX;
         mPosY = posY;
@@ -544,6 +547,8 @@ public class CubeItem {
 
     public void Draw()
     {
+        if (!m_bVisible) return;
+
         vertexData.position(0);
         glVertexAttribPointer(FigureItemLocation.aPositionLocation, Structures.POSITION_COUNT, GL_FLOAT, false, Structures.STRIDE2, vertexData);
         glEnableVertexAttribArray(FigureItemLocation.aPositionLocation);

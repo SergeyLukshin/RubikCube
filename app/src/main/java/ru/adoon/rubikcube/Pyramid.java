@@ -44,7 +44,7 @@ public class Pyramid {
     public static float angle = (float)Math.asin(2 * Math.sqrt(2) / 3);
     //public static float shift_y = radius - h / 2;
 
-    int[][][] rotateL = {
+    /*int[][][] rotateL = {
             {{111, 101, 100, 101,   2, 101}, {202}},
             {{222, 212, 211, 201, 200, 201, 102, 103,   4, 103, 113, 212}, {313, 303, 302, 303, 204, 303}, {404}},
             {{333, 323, 322, 312, 311, 301, 300, 301, 202, 203, 104, 105,   6, 105, 115, 214, 224, 323}, {424, 414, 413, 403, 402, 403, 304, 305, 206, 305, 315, 414}, {515, 505, 504, 505, 406, 505}, {606}}
@@ -63,7 +63,9 @@ public class Pyramid {
             {{111, 101, 202, 101,   2, 101}, {100}},
             {{222, 212, 313, 303, 404, 303, 204, 103,   4, 103, 113, 212}, {211, 201, 302, 201, 102, 201}, {200}},
             {{333, 323, 424, 414, 515, 505, 606, 505, 406, 305, 206, 105,   6, 105, 115, 214, 224, 323}, {322, 312, 413, 403, 504, 403, 304, 203, 104, 203, 213, 312}, {311, 301, 402, 301, 202, 301}, {300}}
-    };
+    };*/
+    int[][][] rotate;
+    int[][][] rotate2;
 
     public static float[] vertex = {
             0, h / 2, 0,
@@ -291,6 +293,153 @@ public class Pyramid {
         }
     }
 
+    public int[][] GetMask2D(int[][][] mask, int axe, int index) {
+        int[][] mask2D = new int[mPyramidDim + mPyramidDim - 1][mPyramidDim + mPyramidDim - 1];
+
+        switch (axe) {
+            case Structures.AXE_B: {
+                    int y = index;
+                    for (int x = 0; x < mask.length; x++) {
+                        for (int z = 0; z < mask[x][y].length; z++) {
+                            if (mask[x][y][z] >= 0)
+                                mask2D[x][z] = x * 100 + y * 10 + z;
+                        }
+                    }
+                }
+                break;
+            case Structures.AXE_F: {
+                    int cnt = mPyramidDim + mPyramidDim - 1;
+                    int ind = cnt - 1;
+                    for (int y = 0; y < mask[0].length; y++) {
+                        for (int z = cnt - 1 - 2 * index - y; z >= cnt - 2 - 2 * index - y; z--) {
+                            if (ind >= 0 && z >= 0) {
+                                for (int x = 0; x < mask.length; x++) {
+                                    if (mask[x][y][z] >= 0)
+                                        mask2D[x][ind] = x * 100 + y * 10 + z;
+                                }
+                            }
+                            ind --;
+                        }
+                    }
+                }
+                break;
+            case Structures.AXE_L: {
+                int cnt = mPyramidDim + mPyramidDim - 1;
+                int ind = 0;
+                for (int y = 0; y < mask[0].length; y++) {
+                    for (int z = y + 2 * index; z < cnt - y; z+=2) {
+                        ind = cnt - 1 - y * 2;
+                        for (int k = 0; k <= 1; k++) {
+                            if (z + k < cnt && ind >= 0) {
+                                int cnt_val = 0;
+                                for (int x = 0; x < mask.length; x++) {
+                                    if (mask[x][y][z + k] >= 0) {
+                                        if (cnt_val == index) {
+                                            mask2D[cnt - 1 - (z + k)][ind] = x * 100 + y * 10 + z + k;
+                                            break;
+                                        }
+                                        cnt_val++;
+                                    }
+                                }
+                            }
+                            ind--;
+                        }
+                    }
+                }
+            }
+            break;
+            case Structures.AXE_R: {
+                int cnt = mPyramidDim + mPyramidDim - 1;
+                int ind = 0;
+                for (int y = 0; y < mask[0].length; y++) {
+                    for (int z = y + 2 * index; z < cnt - y; z+=2) {
+                        ind = cnt - 1 - y * 2;
+                        for (int k = 0; k <= 1; k++) {
+                            if (z + k < cnt && ind >= 0) {
+                                int cnt_val = 0;
+                                for (int x = mask.length - 1; x >= 0; x--) {
+                                    if (mask[x][y][z + k] >= 0) {
+                                        if (cnt_val == index) {
+                                            mask2D[cnt - 1 - (z + k)][ind] = x * 100 + y * 10 + z + k;
+                                            break;
+                                        }
+                                        cnt_val++;
+                                    }
+                                }
+                            }
+                            ind--;
+                        }
+                    }
+                }
+            }
+            break;
+        }
+
+        return mask2D;
+    }
+
+    public int[][] GetInnerMask(int[][] mask2D) {
+        int[][] inner_mask = new int[mPyramidDim + mPyramidDim - 1 - 3 - 3][mPyramidDim + mPyramidDim - 1 - 2 - 4];
+
+        for (int i = 3; i < mask2D.length - 3; i++ ) {
+            for (int j = 4; j < mask2D[i].length - 2; j++ ) {
+                inner_mask[i - 3][j - 4] = mask2D[i][j];
+            }
+        }
+
+        return inner_mask;
+    }
+
+    public int[] GetLine(int[][] mask2D, int index, int PyramidDim) {
+        int[] res = null;
+
+        if (index == PyramidDim - 1) res = new int[1];
+        else res = new int[6 * (PyramidDim - 1 - index)];
+
+        int i = 0;
+        for (int y = 0; y < mask2D[0].length; y++) {
+            for (int x = mask2D.length - 1; x >= 0; x--) {
+                if (mask2D[x][y] > 0) {
+                    if (i < res.length) {
+                        res[i] = mask2D[x][y];
+                        i++;
+                        break;
+                    }
+                }
+            }
+        }
+
+        for (int x = mask2D.length - 1; x >= 0; x--) {
+            for (int y = mask2D[x].length - 1; y >= 0; y--) {
+                if (mask2D[x][y] > 0) {
+                    if (i < res.length) {
+                        if (res[i - 1] != mask2D[x][y]) {
+                            res[i] = mask2D[x][y];
+                            i++;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        for (int y = mask2D[0].length - 1; y >= 0; y--) {
+            for (int x = 0; x < mask2D.length; x++) {
+                if (mask2D[x][y] > 0) {
+                    if (i < res.length) {
+                        if (res[i - 1] != mask2D[x][y]) {
+                            res[i] = mask2D[x][y];
+                            i++;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        return res;
+    }
+
     public synchronized void PyramidInit(int PyramidDim) {
 
         mPyramidDim = PyramidDim;
@@ -311,9 +460,73 @@ public class Pyramid {
             }
         }
 
+        int[][][] mask = new int[mPyramidDim + mPyramidDim - 1][mPyramidDim][mPyramidDim + mPyramidDim - 1];
+        //int[][] prev_mask = new int[mPyramidDim + mPyramidDim - 1][mPyramidDim + mPyramidDim - 1];
+
+        for (int y = mPyramidDim - 1; y >= 0; y --) {
+            // инициализация
+            for (int x = 0; x < mask.length; x++) {
+                for (int z = 0; z < mask[x][y].length; z++) {
+                    mask[x][y][z] = -1;
+                }
+            }
+            if (y == mPyramidDim - 1) {
+                mask[(mPyramidDim + mPyramidDim - 1 - 1) / 2][y][(mPyramidDim + mPyramidDim - 1 - 1) / 2] = 0;
+            }
+            else {
+                for (int x = 0; x < mask.length; x++) {
+                    for (int z = 0; z < mask[x][y].length; z++) {
+                        if (mask[x][y + 1][z] == 0) {
+                            mask[x][y][z] = 1;
+                            mask[x][y][z - 1] = 0;
+                            mask[x - 1][y][z + 1] = 0;
+                            mask[x + 1][y][z + 1] = 0;
+                        }
+                    }
+                }
+            }
+            for (int x = 0; x < mask.length; x++) {
+                for (int z = 0; z < mask[x][y].length; z++) {
+
+                    if (mask[x][y][z] >= 0) {
+                        int rowL = 0; // кол-во слева того же типа
+                        int rowR = 0; // кол-во справа того же типа
+                        int rowF = 0; // кол-во линий, содержащих тот же тип снизу
+                        for (int k = 0; k < mask.length; k++) {
+                            if (k < x && mask[k][y][z] == mask[x][y][z]) rowL++;
+                            if (k > x && mask[k][y][z] == mask[x][y][z]) rowR++;
+                        }
+                        for (int row = z + 1; row < mask[0][y].length; row ++) {
+                            for (int k = 0; k < mask.length; k++) {
+                                if (mask[k][y][row] == mask[x][y][z]) {
+                                    rowF ++;
+                                    break;
+                                }
+                            }
+                        }
+
+                        mItems.get(x).get(y).set(z, new PyramidItem(this, x, y, z, mask[x][y][z], rowL, rowR, y, rowF, null, mPyramidDim, mScale));
+                    }
+                }
+            }
+        }
+
+        rotate = new int[4][mPyramidDim][];
+        rotate2 = new int[4][1][];
+        for (int i = 0; i < rotate.length; i++) {
+            for (int j = 0; j < mPyramidDim; j++) {
+                int[][] mask2D = GetMask2D(mask, i, j);
+                rotate[i][j] = GetLine(mask2D, j, mPyramidDim);
+                if (mPyramidDim >= 5 && j == 0) {
+                    int[][] inner_mask = GetInnerMask(mask2D);
+                    rotate2[i][0] = GetLine(inner_mask, j, mPyramidDim - 3);
+                }
+            }
+        }
+
         //mItems.get(2).get(2).set(2, new PyramidItem(2, 1, 2, 1, 0, 0, 2, 0, null));
 
-        if (mPyramidDim == 2) {
+        /*if (mPyramidDim == 2) {
             mItems.get(1).get(1).set(1, new PyramidItem(this, 1, 1, 1, 0, 0, 0, 1, 0, null, mPyramidDim, mScale));
 
             mItems.get(1).get(0).set(0, new PyramidItem(this, 1, 0, 0, 0, 0, 0, 0, 1, null, mPyramidDim, mScale));
@@ -437,7 +650,7 @@ public class Pyramid {
             mItems.get(3).get(0).set(7, new PyramidItem(this, 3, 0, 7, 1, 1, 2, 0, 0, null, mPyramidDim, mScale));
             mItems.get(5).get(0).set(7, new PyramidItem(this, 5, 0, 7, 1, 2, 1, 0, 0, null, mPyramidDim, mScale));
             mItems.get(7).get(0).set(7, new PyramidItem(this, 7, 0, 7, 1, 3, 0, 0, 0, null, mPyramidDim, mScale));
-        }
+        }*/
     }
 
     public void CreateExVertices(int[] item, float[] point) {
@@ -647,9 +860,9 @@ public class Pyramid {
         }
     }
 
-    public void ExchangeColors(int[][] rotate, Action a) {
+    public void ExchangeColors(int[][] rotate, Action a, int PyramidDim) {
 
-        if (a.m_ActionPosRotate == mPyramidDim - 1) {
+        if (a.m_ActionPosRotate == PyramidDim - 1) {
             int x = rotate[a.m_ActionPosRotate][0] / 100;
             int y = (rotate[a.m_ActionPosRotate][0] % 100) / 10;
             int z = (rotate[a.m_ActionPosRotate][0] % 10);
@@ -671,7 +884,7 @@ public class Pyramid {
 
                 PyramidItem pi = mItems.get(x).get(y).get(z);
 
-                int diff = (mPyramidDim - a.m_ActionPosRotate - 1) * 2;
+                int diff = (PyramidDim - a.m_ActionPosRotate - 1) * 2;
 
                 if (a.m_ActionDirectRotate == Structures.DIRECT_LEFT) {
                     next_ind = i + diff;
@@ -707,15 +920,19 @@ public class Pyramid {
         if (a == null) return false;
         if (a.m_ActionDirectRotate == Structures.DIRECT_NONE) return false;
 
-        if (a.m_ActionAxisRotate == Structures.AXE_L) {
+        //if (a.m_ActionAxisRotate == Structures.AXE_L) {
 
-            ExchangeColors(rotateL[mPyramidDim - 2], a);
+            ExchangeColors(rotate[a.m_ActionAxisRotate], a, mPyramidDim);
             if (mPyramidDim > 2 && a.m_ActionPosRotate == mPyramidDim - 2) {
                 a.m_ActionPosRotate = mPyramidDim - 1;
-                ExchangeColors(rotateL[mPyramidDim - 2], a);
+                ExchangeColors(rotate[a.m_ActionAxisRotate], a, mPyramidDim);
             }
+
+        if (mPyramidDim >= 5 && a.m_ActionPosRotate == 0) {
+            ExchangeColors(rotate2[a.m_ActionAxisRotate], a, mPyramidDim - 3);
         }
-        if (a.m_ActionAxisRotate == Structures.AXE_R) {
+        //}
+        /*if (a.m_ActionAxisRotate == Structures.AXE_R) {
 
             ExchangeColors(rotateR[mPyramidDim - 2], a);
             if (mPyramidDim > 2 && a.m_ActionPosRotate == mPyramidDim - 2) {
@@ -738,7 +955,7 @@ public class Pyramid {
                 a.m_ActionPosRotate = mPyramidDim - 1;
                 ExchangeColors(rotateF[mPyramidDim - 2], a);
             }
-        }
+        }*/
 
         if (a.mFromUser) {
             return isComplete();

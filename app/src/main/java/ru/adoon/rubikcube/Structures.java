@@ -9,6 +9,7 @@ public class Structures {
     public static final int CUBE = 0;
     public static final int PYRAMID = 1;
     public static final int DOMINO_CUBE = 2;
+    public static final int EMPTY_CUBE = 3;
 
     public final static int POSITION_COUNT = 3;
     public static final int NORMAL_COUNT = 3;
