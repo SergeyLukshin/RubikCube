@@ -396,6 +396,9 @@ public class Cube {
                     if (ind < 0) ind += list.size();
                 }
 
+                if (list.get(ind) == null)
+                    continue;
+
                 int[] verge_color_indexes_ = list.get(ind).verge_color_index.clone();
                 if (ind == 0) verge_color_indexes_ = verge_color_indexes_first;
 
@@ -455,7 +458,7 @@ public class Cube {
             }
 
             for (int i = 0; i < list.size() / 2; i++) {
-                if (list.get(i) == null)
+                if (list.get(i) == null || list.get(list.size() - i - 1) == null)
                     continue;
 
                 int x1 = list.get(i).mPosX;// + 1;
@@ -481,14 +484,18 @@ public class Cube {
             // средняя кнопка
             if ((list.size() / 2) * 2 != list.size()) {
                 int index = list.size() / 2;
-                int x = list.get(index).mPosX;// + 1;
-                int y = list.get(index).mPosY;// + 1;
-                int z = list.get(index).mPosZ;// + 1;
-                boolean bVisible = list.get(index).m_bVisible;
 
-                int[] verge_color_indexes_ = list.get(index).verge_color_index.clone();
-                CubeItem.Rotate(verge_color_indexes_, a.m_ActionAxisRotate, a.m_ActionDirectRotate, isEqualDim());
-                mItems.get(x).get(y).set(z, new CubeItem(x, y, z, verge_color_indexes_, mCubeDimX, mCubeDimY, mCubeDimZ, mScale, bVisible));
+                if (list.get(index) != null) {
+
+                    int x = list.get(index).mPosX;// + 1;
+                    int y = list.get(index).mPosY;// + 1;
+                    int z = list.get(index).mPosZ;// + 1;
+                    boolean bVisible = list.get(index).m_bVisible;
+
+                    int[] verge_color_indexes_ = list.get(index).verge_color_index.clone();
+                    CubeItem.Rotate(verge_color_indexes_, a.m_ActionAxisRotate, a.m_ActionDirectRotate, isEqualDim());
+                    mItems.get(x).get(y).set(z, new CubeItem(x, y, z, verge_color_indexes_, mCubeDimX, mCubeDimY, mCubeDimZ, mScale, bVisible));
+                }
             }
         }
 
