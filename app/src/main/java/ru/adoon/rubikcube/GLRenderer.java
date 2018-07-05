@@ -283,7 +283,7 @@ public class GLRenderer implements Renderer {
         }
     }
 
-    public void DoAction(int[] item, float[] start, float[] end) {
+    public boolean DoAction(int[] item, float[] start, float[] end) {
 
         if (data.mClock.IsEnable())
             data.mClock.Resume();
@@ -295,7 +295,9 @@ public class GLRenderer implements Renderer {
             Action ah = a.clone();
             ah.setFromUser(false);
             AddHistory(ah);
+            return true;
         }
+        return false;
     }
 
     /*public void DoAction(int[] CubeItem1, int[] CubeItem2, Bool bNeedRecalc) {

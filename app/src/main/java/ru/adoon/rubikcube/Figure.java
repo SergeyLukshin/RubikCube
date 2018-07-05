@@ -17,12 +17,14 @@ public class Figure {
     private ArrayList<Pyramid> mPyramidList = null;
     private ArrayList<Cube> mDominoCubeList = null;
     private ArrayList<Cube> mEmptyCubeList = null;
+    private ArrayList<FloppyCube> mFloppyCubeList = null;
     public int mFigureType = Structures.CUBE;
     public int mFigureSubType = 1;
     public int mCntCubes = 4;
     public int mCntPyramides = 4;
     public int mCntDominoCubes = 6;
     public int mCntEmptyCubes = 2;
+    public int mCntFloppyCubes = 2;
 
     Figure(Context context) {
         //mCube = new Cube(context);
@@ -44,6 +46,11 @@ public class Figure {
         mEmptyCubeList = new ArrayList<Cube>();
         for (int i = 0; i < mCntEmptyCubes; i++) {
             mEmptyCubeList.add(new Cube(context));
+        }
+
+        mFloppyCubeList = new ArrayList<FloppyCube>();
+        for (int i = 0; i < mCntFloppyCubes; i++) {
+            mFloppyCubeList.add(new FloppyCube(context));
         }
     }
 
@@ -87,6 +94,16 @@ public class Figure {
                     return mEmptyCubeList.get(mFigureSubType).mCubeDimZ;
             }
         }
+        if (FigureType == Structures.FLOPPY_CUBE) {
+            switch (axis) {
+                case Structures.AXE_X:
+                    return mFloppyCubeList.get(mFigureSubType).mCubeDimX;
+                case Structures.AXE_Y:
+                    return mFloppyCubeList.get(mFigureSubType).mCubeDimY;
+                case Structures.AXE_Z:
+                    return mFloppyCubeList.get(mFigureSubType).mCubeDimZ;
+            }
+        }
         return 0;
     }
 
@@ -128,6 +145,12 @@ public class Figure {
             if (mFigureSubType == 1)
                 mEmptyCubeList.get(mFigureSubType).CubeInit(5, 5, 5, true);
         }
+        if (mFigureType == Structures.FLOPPY_CUBE) {
+            if (mFigureSubType == 0)
+                mFloppyCubeList.get(mFigureSubType).CubeInit(3, 3, 3);
+            if (mFigureSubType == 1)
+                mFloppyCubeList.get(mFigureSubType).CubeInit(5, 5, 5);
+        }
     }
 
     public void SetContext(Context context) {
@@ -139,6 +162,8 @@ public class Figure {
             mDominoCubeList.get(i).SetContext(context);
         for (int i = 0; i < mCntEmptyCubes; i++)
             mEmptyCubeList.get(i).SetContext(context);
+        for (int i = 0; i < mCntFloppyCubes; i++)
+            mFloppyCubeList.get(i).SetContext(context);
     }
 
     public void SavePos(SharedPreferences.Editor ed) {
@@ -153,6 +178,8 @@ public class Figure {
             mDominoCubeList.get(mFigureSubType).SavePos(ed);
         if (mFigureType == Structures.EMPTY_CUBE)
             mEmptyCubeList.get(mFigureSubType).SavePos(ed);
+        if (mFigureType == Structures.FLOPPY_CUBE)
+            mFloppyCubeList.get(mFigureSubType).SavePos(ed);
     }
 
     public void LoadPos(SharedPreferences sPref) {
@@ -167,6 +194,8 @@ public class Figure {
             mDominoCubeList.get(mFigureSubType).LoadPos(sPref);
         if (mFigureType == Structures.EMPTY_CUBE)
             mEmptyCubeList.get(mFigureSubType).LoadPos(sPref);
+        if (mFigureType == Structures.FLOPPY_CUBE)
+            mFloppyCubeList.get(mFigureSubType).LoadPos(sPref);
     }
 
     public int GetRndPosRotate(Random r, int axis) {
@@ -174,7 +203,7 @@ public class Figure {
     }
 
     public int GetMaxAxisCnt() {
-        if (mFigureType == Structures.CUBE || mFigureType == Structures.DOMINO_CUBE || mFigureType == Structures.EMPTY_CUBE)
+        if (mFigureType == Structures.CUBE || mFigureType == Structures.DOMINO_CUBE || mFigureType == Structures.EMPTY_CUBE || mFigureType == Structures.FLOPPY_CUBE)
             return 3;
         if (mFigureType == Structures.PYRAMID)
             return 4;
@@ -191,6 +220,8 @@ public class Figure {
             return mDominoCubeList.get(mFigureSubType).GetLimitAngle();
         if (mFigureType == Structures.EMPTY_CUBE)
             return mEmptyCubeList.get(mFigureSubType).GetLimitAngle();
+        if (mFigureType == Structures.FLOPPY_CUBE)
+            return mFloppyCubeList.get(mFigureSubType).GetLimitAngle();
 
         return 0;
     }
@@ -204,6 +235,8 @@ public class Figure {
             return mDominoCubeList.get(mFigureSubType).GetSelectItem(start, end);
         if (mFigureType == Structures.EMPTY_CUBE)
             return mEmptyCubeList.get(mFigureSubType).GetSelectItem(start, end);
+        if (mFigureType == Structures.FLOPPY_CUBE)
+            return mFloppyCubeList.get(mFigureSubType).GetSelectItem(start, end);
 
         return null;
     }
@@ -217,6 +250,8 @@ public class Figure {
             return mDominoCubeList.get(mFigureSubType).GetAction(item, start, end);
         if (mFigureType == Structures.EMPTY_CUBE)
             return mEmptyCubeList.get(mFigureSubType).GetAction(item, start, end);
+        if (mFigureType == Structures.FLOPPY_CUBE)
+            return mFloppyCubeList.get(mFigureSubType).GetAction(item, start, end);
 
         return null;
     }
@@ -230,6 +265,8 @@ public class Figure {
             mDominoCubeList.get(mFigureSubType).Draw(a);
         if (mFigureType == Structures.EMPTY_CUBE)
             mEmptyCubeList.get(mFigureSubType).Draw(a);
+        if (mFigureType == Structures.FLOPPY_CUBE)
+            mFloppyCubeList.get(mFigureSubType).Draw(a);
     }
 
     /*public Action GetAction(int[] CubeItem1, int[] CubeItem2, Bool bNeedRecalc) {
@@ -246,6 +283,8 @@ public class Figure {
             return mDominoCubeList.get(mFigureSubType).StoreItemPosition(a);
         if (mFigureType == Structures.EMPTY_CUBE)
             return mEmptyCubeList.get(mFigureSubType).StoreItemPosition(a);
+        if (mFigureType == Structures.FLOPPY_CUBE)
+            return mFloppyCubeList.get(mFigureSubType).StoreItemPosition(a);
 
         return false;
     }
@@ -259,5 +298,7 @@ public class Figure {
             mDominoCubeList.get(mFigureSubType).CreateExVertices(item, point);
         if (mFigureType == Structures.EMPTY_CUBE)
             mEmptyCubeList.get(mFigureSubType).CreateExVertices(item, point);
+        if (mFigureType == Structures.FLOPPY_CUBE)
+            mFloppyCubeList.get(mFigureSubType).CreateExVertices(item, point);
     }
 }

@@ -477,6 +477,9 @@ public class Surface extends GLSurfaceView implements GestureDetector.OnGestureL
                         case Menu.menu_do_figure_empty_cube:
                             mRender.data.mMenu.MenuShow(Menu.menu_do_size_empty_cube);
                             return true;
+                        case Menu.menu_do_figure_floppy_cube:
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_size_floppy_cube);
+                            return true;
                         case Menu.menu_none:
                             break;
                     }
@@ -656,6 +659,32 @@ public class Surface extends GLSurfaceView implements GestureDetector.OnGestureL
                     }
                 }
 
+                if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_size_floppy_cube) {
+
+                    mRender.data.mMenu.MenuClose();
+
+                    switch (index) {
+                        case Menu.menu_do_size_floppy_cube_333:
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.data.mFigure.SetFigure(Structures.FLOPPY_CUBE, 0);
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_do_size_floppy_cube_555:
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.data.mFigure.SetFigure(Structures.FLOPPY_CUBE, 1);
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_none:
+                            break;
+                    }
+                }
+
                 if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_rotate) {
 
                     mRender.data.mMenu.MenuClose();
@@ -785,7 +814,23 @@ public class Surface extends GLSurfaceView implements GestureDetector.OnGestureL
                 float[] ray;
                 ray = getViewRay(tap);
 
-                mRender.DoAction(mSelectItem, ray, Structures.CameraEye);
+                if (!mRender.DoAction(mSelectItem, ray, Structures.CameraEye)) {
+                    /*if (mRender.data.mLockSprite.GetType() == Structures.UNLOCK)
+                    {
+                        if (mPreviousX >= 0 && mPreviousY >= 0) {
+                            mDeltaX = (x - mPreviousX) / mDensity / 2f;
+                            mDeltaY = (y - mPreviousY) / mDensity / 2f;
+
+                            Camera.mDeltaX = mDeltaX;
+                            Camera.mDeltaY = mDeltaY;
+
+                            mPreviousX = x;
+                            mPreviousY = y;
+
+                            mAction = Structures.ACTION_MOVE;
+                        }
+                    }*/
+                }
             }
         }
         if (mRender.data.mLockSprite.GetType() == Structures.UNLOCK && event.getAction() == MotionEvent.ACTION_MOVE && pointerCount == 2)

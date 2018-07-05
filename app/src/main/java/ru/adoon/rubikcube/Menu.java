@@ -25,6 +25,7 @@ public class Menu {
     public static final int menu_do_size_pyramid = 9;
     public static final int menu_do_size_dcube = 10;
     public static final int menu_do_size_empty_cube = 11;
+    public static final int menu_do_size_floppy_cube = 12;
 
     public static final int menu_none = -1;
 
@@ -59,6 +60,7 @@ public class Menu {
     public static final int menu_do_figure_pyramid = 1;
     public static final int menu_do_figure_domino_cube = 2;
     public static final int menu_do_figure_empty_cube = 3;
+    public static final int menu_do_figure_floppy_cube = 4;
 
     public static final int menu_do_size_cube_222 = 0;
     public static final int menu_do_size_cube_333 = 1;
@@ -79,6 +81,9 @@ public class Menu {
 
     public static final int menu_do_size_empty_cube_333 = 0;
     public static final int menu_do_size_empty_cube_555 = 1;
+
+    public static final int menu_do_size_floppy_cube_333 = 0;
+    public static final int menu_do_size_floppy_cube_555 = 1;
 
     public static final int menu_do_rotate_rotate_type = 0;
     public static final int menu_do_rotate_rotate1 = 1;
@@ -163,10 +168,11 @@ public class Menu {
 
         list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_figure_cube, 4, 1f * 210f / 460f, R.drawable.menu_cube, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_figure_pyramid, 4, 1f * 370f / 460f, R.drawable.menu_pyramid, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_figure_domino_cube, 4, 1f * 420f / 460f, R.drawable.menu_dcube, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_figure_empty_cube, 4, 1f * 360f / 460f, R.drawable.menu_empty_cube, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_figure_cube, 5, 1f * 210f / 460f, R.drawable.menu_cube, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_figure_pyramid, 5, 1f * 370f / 460f, R.drawable.menu_pyramid, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_figure_domino_cube, 5, 1f * 420f / 460f, R.drawable.menu_dcube, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_figure_empty_cube, 5, 1f * 360f / 460f, R.drawable.menu_empty_cube, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_figure_floppy_cube, 5, 1f * 360f / 460f, R.drawable.menu_empty_cube, 0, true));
         }
         menu.add(list);
 
@@ -232,6 +238,13 @@ public class Menu {
         {
             list.add(new MenuItemSprite(ctx, menu_do_size_empty_cube_333, 2, 1f * 240f / 460f, R.drawable.menu_size333, 0, true));
             list.add(new MenuItemSprite(ctx, menu_do_size_empty_cube_555, 2, 1f * 240f / 460f, R.drawable.menu_size555, 0, true));
+        }
+        menu.add(list);
+
+        list = new ArrayList<MenuItemSprite>();
+        {
+            list.add(new MenuItemSprite(ctx, menu_do_size_floppy_cube_333, 2, 1f * 240f / 460f, R.drawable.menu_size333, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_size_floppy_cube_555, 2, 1f * 240f / 460f, R.drawable.menu_size555, 0, true));
         }
         menu.add(list);
 

@@ -100,6 +100,7 @@ public class Cube {
         if (MaxCubeDim == 5) mScale = 0.6f;
 
         if (mItems.size() == 0) {
+            mItems.clear();
             for (int x = 0; x <= mCubeDimX - 1; x++) {
                 mItems.add(new ArrayList<ArrayList<CubeItem>>());
                 for (int y = 0; y <= mCubeDimY - 1; y++) {
@@ -123,19 +124,22 @@ public class Cube {
         }
         else {
             for (int x = 0; x <= mCubeDimX - 1; x++) {
-                mItems.add(new ArrayList<ArrayList<CubeItem>>());
+                //mItems.add(new ArrayList<ArrayList<CubeItem>>());
                 for (int y = 0; y <= mCubeDimY - 1; y++) {
-                    mItems.get(x).add(new ArrayList<CubeItem>());
+                    //mItems.get(x).add(new ArrayList<CubeItem>());
                     for (int z = 0; z <= mCubeDimZ - 1; z++) {
                         if (x == 0 || x == mCubeDimX - 1 || y == 0 || y == mCubeDimY - 1 || z == 0 || z == mCubeDimZ - 1) // если скраю
                         {
                             if (mEmpty && ((x == 0 || x == mCubeDimX - 1) && (y + 1) % 2 == 0 && (z + 1) % 2 == 0 ||
                                     (y == 0 || y == mCubeDimX - 1) && (x + 1) % 2 == 0 && (z + 1) % 2 == 0 ||
                                     (z == 0 || z == mCubeDimX - 1) && (x + 1) % 2 == 0 && (y + 1) % 2 == 0)) {
-                                mItems.get(x).get(y).set(z, new CubeItem(x/* - 1*/, y/* - 1*/, z/* - 1*/, null, mCubeDimX, mCubeDimY, mCubeDimZ, mScale, false));
+                                mItems.get(x).get(y).set(z, new CubeItem(x, y, z, null, mCubeDimX, mCubeDimY, mCubeDimZ, mScale, false));
                             }
                             else
-                                mItems.get(x).get(y).set(z, new CubeItem(x/* - 1*/, y/* - 1*/, z/* - 1*/, null, mCubeDimX, mCubeDimY, mCubeDimZ, mScale, true));
+                                mItems.get(x).get(y).set(z, new CubeItem(x, y, z, null, mCubeDimX, mCubeDimY, mCubeDimZ, mScale, true));
+                        }
+                        else {
+                            mItems.get(x).get(y).set(z, null);
                         }
                     }
                 }
@@ -376,6 +380,7 @@ public class Cube {
                 break;
 
             int[] verge_color_indexes_first = list.get(0).verge_color_index.clone();
+            boolean bVisibleFirst = list.get(0).m_bVisible;
             int ind = 0;
             for (int i = 0; i < list.size(); i++) {
 
@@ -385,7 +390,7 @@ public class Cube {
                 x = list.get(i).mPosX;// + 1;
                 y = list.get(i).mPosY;// + 1;
                 z = list.get(i).mPosZ;// + 1;
-                bVisible = list.get(i).m_bVisible;// + 1;
+                //bVisible = list.get(i).m_bVisible;// + 1;
 
                 if (a.m_ActionDirectRotate == Structures.DIRECT_LEFT) {
                     ind = i + dif;
@@ -400,7 +405,11 @@ public class Cube {
                     continue;
 
                 int[] verge_color_indexes_ = list.get(ind).verge_color_index.clone();
-                if (ind == 0) verge_color_indexes_ = verge_color_indexes_first;
+                bVisible = list.get(ind).m_bVisible;
+                if (ind == 0) {
+                    verge_color_indexes_ = verge_color_indexes_first;
+                    bVisible = bVisibleFirst;
+                }
 
                 CubeItem.Rotate(verge_color_indexes_, a.m_ActionAxisRotate, a.m_ActionDirectRotate, isEqualDim());
                 mItems.get(x).get(y).set(z, new CubeItem(x, y, z, verge_color_indexes_, mCubeDimX, mCubeDimY, mCubeDimZ, mScale, bVisible));
@@ -735,6 +744,7 @@ public class Cube {
                             str = str + String.valueOf(ci.verge_color_index[i]);
                         }
                         ed.putString("CubeVertexColor" + String.valueOf(mEmpty) + String.valueOf(mCubeDimX) + String.valueOf(mCubeDimY) + String.valueOf(mCubeDimZ) + String.valueOf(x) + String.valueOf(y) + String.valueOf(z), str);
+                        ed.putBoolean("CubeVisible" + String.valueOf(mEmpty) + String.valueOf(mCubeDimX) + String.valueOf(mCubeDimY) + String.valueOf(mCubeDimZ) + String.valueOf(x) + String.valueOf(y) + String.valueOf(z), ci.m_bVisible);
                     }
                 }
             }
@@ -748,11 +758,12 @@ public class Cube {
                     CubeItem ci = mItems.get(x).get(y).get(z);
                     if (ci != null) {
                         String str = sPref.getString("CubeVertexColor" + String.valueOf(mEmpty) + String.valueOf(mCubeDimX) + String.valueOf(mCubeDimY) + String.valueOf(mCubeDimZ) + String.valueOf(x) + String.valueOf(y) + String.valueOf(z), "");
+                        boolean bVisible = sPref.getBoolean("CubeVisible" + String.valueOf(mEmpty) + String.valueOf(mCubeDimX) + String.valueOf(mCubeDimY) + String.valueOf(mCubeDimZ) + String.valueOf(x) + String.valueOf(y) + String.valueOf(z), ci.m_bVisible);
                         if (str != "") {
                             int[] verge_color_indexes_ = {Cube.BLACK, Cube.BLACK, Cube.BLACK, Cube.BLACK, Cube.BLACK, Cube.BLACK};
                             for (int i = 0; i < str.length(); i++)
                                 verge_color_indexes_[i] = Integer.valueOf(str.substring(i, i + 1));
-                            mItems.get(x).get(y).set(z, new CubeItem(x/* - 1*/, y/* - 1*/, z/* - 1*/, verge_color_indexes_, mCubeDimX, mCubeDimY, mCubeDimZ, mScale, ci.m_bVisible));
+                            mItems.get(x).get(y).set(z, new CubeItem(x/* - 1*/, y/* - 1*/, z/* - 1*/, verge_color_indexes_, mCubeDimX, mCubeDimY, mCubeDimZ, mScale, bVisible));
                         }
                     }
                 }
