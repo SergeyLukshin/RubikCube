@@ -134,14 +134,18 @@ public class GLRenderer implements Renderer {
         ClearHistory();
         //data.mCube.CubeInit();
 
+        //if (data.mFigure.IsActionCorrect(a)) {
+
         Random r = new Random();
+
         for (int i = 0; i < cnt; i++) {
             Action a = new Action(false);
             a.mAngleDif = data.mFigure.GetLimitAngle();
             a.m_ActionAxisRotate = r.nextInt(data.mFigure.GetMaxAxisCnt());
             a.m_ActionPosRotate = data.mFigure.GetRndPosRotate(r, a.m_ActionAxisRotate);//data.mFigure.mType == 0 ? r.nextInt(data.mDim) : r.nextInt(3);
             a.m_ActionDirectRotate = r.nextInt(2);
-            if (a.m_ActionDirectRotate == Structures.DIRECT_NONE) a.m_ActionDirectRotate = Structures.DIRECT_LEFT;
+            if (a.m_ActionDirectRotate == Structures.DIRECT_NONE)
+                a.m_ActionDirectRotate = Structures.DIRECT_LEFT;
             mActions.AddNoStart(a);
         }
         mActions.ActionStart();
@@ -236,6 +240,13 @@ public class GLRenderer implements Renderer {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        /*Action cur_a = mActions.GetCurAction();
+        if (cur_a != null && !data.mFigure.IsActionCorrect(cur_a)) {
+            mActions.RemoveCurAction();
+            mActions.ActionStart();
+            return;
+        }*/
+
         if (mActions.ActionIsEnable()) mActions.ActionExec();
 
         glUseProgram(programIdSprite);
@@ -256,7 +267,10 @@ public class GLRenderer implements Renderer {
             Action a_ = mActions.list.get(0);
             if (a_ != null) {
                 Action a = a_.clone();
-                data.mFigure.Draw(a);
+                if (data.mFigure.IsActionCorrect(a))
+                    data.mFigure.Draw(a);
+                else
+                    data.mFigure.Draw(null);
             }
         }
         else
@@ -270,9 +284,13 @@ public class GLRenderer implements Renderer {
 
         Action a = mActions.CheckActionStop(data.mFigure.GetLimitAngle());
         if (a != null) {
-            boolean res = data.mFigure.StoreItemPosition(a);
+            boolean res = false;
+            if (data.mFigure.IsActionCorrect(a)) {
+                res = data.mFigure.StoreItemPosition(a);
+            }
             if (mActions.list.size() == 0)
                 data.SaveData();
+
             if (res) {
                 if (data.mClock.IsEnable())
                     data.mMenu.MenuShow(Menu.menu_do_complete);

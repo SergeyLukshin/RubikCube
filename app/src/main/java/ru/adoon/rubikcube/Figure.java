@@ -24,7 +24,7 @@ public class Figure {
     public int mCntPyramides = 4;
     public int mCntDominoCubes = 6;
     public int mCntEmptyCubes = 2;
-    public int mCntFloppyCubes = 2;
+    public int mCntFloppyCubes = 4;
 
     Figure(Context context) {
         //mCube = new Cube(context);
@@ -147,9 +147,13 @@ public class Figure {
         }
         if (mFigureType == Structures.FLOPPY_CUBE) {
             if (mFigureSubType == 0)
-                mFloppyCubeList.get(mFigureSubType).CubeInit(3, 3, 3);
+                mFloppyCubeList.get(mFigureSubType).CubeInit(2, 1, 2);
             if (mFigureSubType == 1)
-                mFloppyCubeList.get(mFigureSubType).CubeInit(5, 5, 5);
+                mFloppyCubeList.get(mFigureSubType).CubeInit(3, 3, 3);
+            if (mFigureSubType == 2)
+                mFloppyCubeList.get(mFigureSubType).CubeInit(4, 1, 4);
+            if (mFigureSubType == 3)
+                mFloppyCubeList.get(mFigureSubType).CubeInit(5, 1, 5);
         }
     }
 
@@ -239,6 +243,21 @@ public class Figure {
             return mFloppyCubeList.get(mFigureSubType).GetSelectItem(start, end);
 
         return null;
+    }
+
+    public boolean IsActionCorrect(Action a) {
+        if (mFigureType == Structures.CUBE)
+            return true;
+        if (mFigureType == Structures.PYRAMID)
+            return true;
+        if (mFigureType == Structures.DOMINO_CUBE)
+            return true;
+        if (mFigureType == Structures.EMPTY_CUBE)
+            return true;
+        if (mFigureType == Structures.FLOPPY_CUBE)
+            return mFloppyCubeList.get(mFigureSubType).IsActionCorrect(a);
+
+        return false;
     }
 
     public Action GetAction(int[] item, float[] start, float[] end/*, boolean bSelect*/) {

@@ -184,6 +184,56 @@ public class FloppyCube {
 
     public boolean isComplete() {
         HashMap<Integer, Integer> mapColor = new HashMap<>();
+
+        boolean bX = true;
+        boolean bY = false;
+        boolean bZ = false;
+
+        if (isEqualDim()) {
+            // сначала проверяем, что получилась плоская фигура
+            for (int y = 0; y < mItems.get((mCubeDimX - 1) / 2).size(); y++) {
+                for (int z = 0; z < mItems.get((mCubeDimX - 1) / 2).get(y).size(); z++) {
+                    FloppyCubeItem ci = mItems.get((mCubeDimX - 1) / 2).get(y).get(z);
+                    if (ci == null || !ci.m_bVisible) {
+                        bX = false;
+                        break;
+                    }
+                }
+            }
+            if (!bX) {
+                bY = true;
+                for (int x = 0; x < mItems.size(); x++) {
+                    for (int z = 0; z < mItems.get(x).get((mCubeDimY - 1) / 2).size(); z++) {
+                        FloppyCubeItem ci = mItems.get(x).get((mCubeDimY - 1) / 2).get(z);
+                        if (ci == null || !ci.m_bVisible) {
+                            bY = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!bY) {
+                bZ = true;
+                for (int x = 0; x < mItems.size(); x++) {
+                    for (int y = 0; y < mItems.get(x).size(); y++) {
+                        FloppyCubeItem ci = mItems.get(x).get(y).get((mCubeDimZ - 1) / 2);
+                        if (ci == null || !ci.m_bVisible) {
+                            bZ = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!bX && !bY && !bZ)
+                return false;
+        }
+        else {
+            bX = false;
+            bY = true;
+            bZ = false;
+        }
+
+        // потом проверяем цвета
         for (int x = 0; x < mItems.size(); x++) {
             for (int y = 0; y < mItems.get(x).size(); y++) {
                 for (int z = 0; z < mItems.get(x).get(y).size(); z++) {
@@ -194,14 +244,35 @@ public class FloppyCube {
                         int surface_y_index = -1;
                         int surface_z_index = -1;
 
-                        if (z == mCubeDimZ - 1) surface_z_index = 0;
-                        if (z == 0) surface_z_index = 2;
+                        if (bX && x == (mCubeDimX - 1) / 2) {
+                            if (z == mCubeDimZ - 1) surface_z_index = 0;
+                            if (z == 0) surface_z_index = 2;
 
-                        if (x == mCubeDimX - 1) surface_x_index = 1;
-                        if (x == 0) surface_x_index = 3;
+                            surface_x_index = 1;
 
-                        if (y == mCubeDimY - 1) surface_y_index = 4;
-                        if (y == 0) surface_y_index = 5;
+                            if (y == mCubeDimY - 1) surface_y_index = 4;
+                            if (y == 0) surface_y_index = 5;
+                        }
+
+                        if (bY && y == (mCubeDimY - 1) / 2) {
+                            if (z == mCubeDimZ - 1) surface_z_index = 0;
+                            if (z == 0) surface_z_index = 2;
+
+                            if (x == mCubeDimX - 1) surface_x_index = 1;
+                            if (x == 0) surface_x_index = 3;
+
+                            surface_y_index = 4;
+                        }
+
+                        if (bZ && z == (mCubeDimZ - 1) / 2) {
+                            surface_z_index = 0;
+
+                            if (x == mCubeDimX - 1) surface_x_index = 1;
+                            if (x == 0) surface_x_index = 3;
+
+                            if (y == mCubeDimY - 1) surface_y_index = 4;
+                            if (y == 0) surface_y_index = 5;
+                        }
 
                         int color_x = -1;
                         int color_y = -1;
@@ -236,7 +307,7 @@ public class FloppyCube {
     }
 
     public boolean isEqualDim() {
-        return (mCubeDimX == mCubeDimY && mCubeDimY == mCubeDimZ);
+        return (mCubeDimX == mCubeDimY && mCubeDimY == mCubeDimZ && mCubeDimX == 3);
     }
 
     public boolean StoreItemPosition(Action a) {
@@ -406,7 +477,7 @@ public class FloppyCube {
         }
 
         // отдельно обрабатываем единичные элементы
-        {
+        if (isEqualDim()) {
             int x = (mCubeDimX - 1) / 2;
             int y = (mCubeDimY - 1) / 2;
             int z = (mCubeDimZ - 1) / 2;
@@ -425,8 +496,9 @@ public class FloppyCube {
                 FloppyCubeItem.Rotate(verge_color_indexes_, a.m_ActionAxisRotate, a.m_ActionDirectRotate, isEqualDim());
                 mItems.get(x).get(y).set(z, new FloppyCubeItem(x, y, z, verge_color_indexes_, mCubeDimX, mCubeDimY, mCubeDimZ, mScale, bVisible));
             }
-
-            /*ArrayList<FloppyCubeItem> list = new ArrayList<FloppyCubeItem>();
+        }
+        else {
+            ArrayList<FloppyCubeItem> list = new ArrayList<FloppyCubeItem>();
             if ((dimY > 1 || dimZ > 1) && a.m_ActionAxisRotate == Structures.AXE_X) {
                 int x = a.m_ActionPosRotate;
                 if (dimY == 1) {
@@ -484,8 +556,8 @@ public class FloppyCube {
                 int[] verge_color_indexes1_ = list.get(i).verge_color_index.clone();
                 int[] verge_color_indexes2_ = list.get(list.size() - i - 1).verge_color_index.clone();
 
-                FloppyCubeItem.Rotate(verge_color_indexes1_, a.m_ActionAxisRotate, a.m_ActionDirectRotate, isEqualDim());
-                FloppyCubeItem.Rotate(verge_color_indexes2_, a.m_ActionAxisRotate, a.m_ActionDirectRotate, isEqualDim());
+                CubeItem.Rotate(verge_color_indexes1_, a.m_ActionAxisRotate, a.m_ActionDirectRotate, isEqualDim());
+                CubeItem.Rotate(verge_color_indexes2_, a.m_ActionAxisRotate, a.m_ActionDirectRotate, isEqualDim());
 
                 mItems.get(x1).get(y1).set(z1, new FloppyCubeItem(x1, y1, z1, verge_color_indexes2_, mCubeDimX, mCubeDimY, mCubeDimZ, mScale, bVisible1));
                 mItems.get(x2).get(y2).set(z2, new FloppyCubeItem(x2, y2, z2, verge_color_indexes1_, mCubeDimX, mCubeDimY, mCubeDimZ, mScale, bVisible2));
@@ -503,14 +575,14 @@ public class FloppyCube {
                     boolean bVisible = list.get(index).m_bVisible;
 
                     int[] verge_color_indexes_ = list.get(index).verge_color_index.clone();
-                    FloppyCubeItem.Rotate(verge_color_indexes_, a.m_ActionAxisRotate, a.m_ActionDirectRotate, isEqualDim());
+                    CubeItem.Rotate(verge_color_indexes_, a.m_ActionAxisRotate, a.m_ActionDirectRotate, isEqualDim());
                     mItems.get(x).get(y).set(z, new FloppyCubeItem(x, y, z, verge_color_indexes_, mCubeDimX, mCubeDimY, mCubeDimZ, mScale, bVisible));
                 }
-            }*/
+            }
         }
 
         if (a.mFromUser) {
-            //return isComplete();
+            return isComplete();
         }
 
         return false;
@@ -656,11 +728,62 @@ public class FloppyCube {
             }
         }
 
-        // по оси Y не вращаемся
-        //if (a.m_ActionAxisRotate == Structures.AXE_Y) return null;
-        // нужна более точная проверка, вращение по оси производится только в случае присутствия центрального элемента
+        if (isEqualDim()) {
+            // нужна более точная проверка, вращение по оси производится только в случае присутствия центрального элемента и отсутствия висячих элементов
+            if (a.m_ActionAxisRotate == Structures.AXE_Y) {
+                for (int y = 0; y < mItems.get((mCubeDimX - 1) / 2).size(); y++) {
+                    FloppyCubeItem ci = mItems.get((mCubeDimX - 1) / 2).get(y).get((mCubeDimZ - 1) / 2);
+                    if (ci == null || !ci.m_bVisible) return null;
+                }
+            }
+
+            if (a.m_ActionAxisRotate == Structures.AXE_X) {
+                for (int x = 0; x < mItems.size(); x++) {
+                    FloppyCubeItem ci = mItems.get(x).get(mCubeDimY / 2).get(mCubeDimZ / 2);
+                    if (ci == null || !ci.m_bVisible) return null;
+                }
+            }
+
+            if (a.m_ActionAxisRotate == Structures.AXE_Z) {
+                for (int z = 0; z < mItems.get((mCubeDimX - 1) / 2).get((mCubeDimY - 1) / 2).size(); z++) {
+                    FloppyCubeItem ci = mItems.get((mCubeDimX - 1) / 2).get((mCubeDimY - 1) / 2).get(z);
+                    if (ci == null || !ci.m_bVisible) return null;
+                }
+            }
+        }
+        else {
+            // по оси Y не вращаемся
+            if (a.m_ActionAxisRotate == Structures.AXE_Y) return null;
+        }
 
         return a;
+    }
+
+    public boolean IsActionCorrect(Action a) {
+        if (isEqualDim()) {
+            if (a.m_ActionAxisRotate == Structures.AXE_Y) {
+                for (int y = 0; y < mItems.get((mCubeDimX - 1) / 2).size(); y++) {
+                    FloppyCubeItem ci = mItems.get((mCubeDimX - 1) / 2).get(y).get((mCubeDimZ - 1) / 2);
+                    if (ci == null || !ci.m_bVisible) return false;
+                }
+            }
+
+            if (a.m_ActionAxisRotate == Structures.AXE_X) {
+                for (int x = 0; x < mItems.size(); x++) {
+                    FloppyCubeItem ci = mItems.get(x).get((mCubeDimY - 1) / 2).get((mCubeDimZ - 1) / 2);
+                    if (ci == null || !ci.m_bVisible) return false;
+                }
+            }
+
+            if (a.m_ActionAxisRotate == Structures.AXE_Z) {
+                for (int z = 0; z < mItems.get((mCubeDimX - 1) / 2).get((mCubeDimY - 1) / 2).size(); z++) {
+                    FloppyCubeItem ci = mItems.get((mCubeDimX - 1) / 2).get((mCubeDimY - 1) / 2).get(z);
+                    if (ci == null || !ci.m_bVisible) return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     public Pair<int[], float[]> GetSelectItem(float[] start, float[] end/*, boolean bSelect*/)

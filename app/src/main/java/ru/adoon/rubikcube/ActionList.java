@@ -27,6 +27,20 @@ public class ActionList {
         }
     }
 
+    public synchronized Action GetCurAction() {
+        if (list.size() > 0) {
+            return list.get(0);
+        }
+        return null;
+    }
+
+    public synchronized void RemoveCurAction() {
+        if (list.size() > 0) {
+            list.remove(0);
+            mPause = -1;
+        }
+    }
+
     public synchronized void ActionStart() {
         if (list.size() > 0) {
             list.get(0).ActionStart();

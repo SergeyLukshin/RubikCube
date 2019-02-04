@@ -82,8 +82,10 @@ public class Menu {
     public static final int menu_do_size_empty_cube_333 = 0;
     public static final int menu_do_size_empty_cube_555 = 1;
 
-    public static final int menu_do_size_floppy_cube_333 = 0;
-    public static final int menu_do_size_floppy_cube_555 = 1;
+    public static final int menu_do_size_floppy_cube_122 = 0;
+    public static final int menu_do_size_floppy_cube_133 = 1;
+    public static final int menu_do_size_floppy_cube_144 = 2;
+    public static final int menu_do_size_floppy_cube_155 = 3;
 
     public static final int menu_do_rotate_rotate_type = 0;
     public static final int menu_do_rotate_rotate1 = 1;
@@ -172,7 +174,7 @@ public class Menu {
             list.add(new MenuItemSprite(ctx, menu_do_figure_pyramid, 5, 1f * 370f / 460f, R.drawable.menu_pyramid, 0, true));
             list.add(new MenuItemSprite(ctx, menu_do_figure_domino_cube, 5, 1f * 420f / 460f, R.drawable.menu_dcube, 0, true));
             list.add(new MenuItemSprite(ctx, menu_do_figure_empty_cube, 5, 1f * 360f / 460f, R.drawable.menu_empty_cube, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_figure_floppy_cube, 5, 1f * 360f / 460f, R.drawable.menu_empty_cube, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_figure_floppy_cube, 5, 1f * 420f / 460f, R.drawable.menu_fcube, 0, true));
         }
         menu.add(list);
 
@@ -243,8 +245,10 @@ public class Menu {
 
         list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_size_floppy_cube_333, 2, 1f * 240f / 460f, R.drawable.menu_size333, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_floppy_cube_555, 2, 1f * 240f / 460f, R.drawable.menu_size555, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_size_floppy_cube_122, 4, 1f * 240f / 460f, R.drawable.menu_size122, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_size_floppy_cube_133, 4, 1f * 240f / 460f, R.drawable.menu_size133, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_size_floppy_cube_144, 4, 1f * 240f / 460f, R.drawable.menu_size144, 0, true));
+            list.add(new MenuItemSprite(ctx, menu_do_size_floppy_cube_155, 4, 1f * 240f / 460f, R.drawable.menu_size155, 0, true));
         }
         menu.add(list);
 
@@ -288,7 +292,7 @@ public class Menu {
     }
 
     public int GetMenuPressed(float x, float y) {
-        if (mActiveMenuIndex < 0) return Menu.menu_none;
+        if (mActiveMenuIndex < 0 || mActiveMenuIndex >= menu.size()) return Menu.menu_none;
         for (int i = 0; i < menu.get(mActiveMenuIndex).size(); i++) {
             if (/*menu.get(mActiveMenuIndex).get(i).IsEnabled() &&*/ menu.get(mActiveMenuIndex).get(i).IsPressed(x, y))
                 return i;

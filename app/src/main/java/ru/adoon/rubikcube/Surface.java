@@ -664,7 +664,7 @@ public class Surface extends GLSurfaceView implements GestureDetector.OnGestureL
                     mRender.data.mMenu.MenuClose();
 
                     switch (index) {
-                        case Menu.menu_do_size_floppy_cube_333:
+                        case Menu.menu_do_size_floppy_cube_122:
                             if (mRender.data.mClock.IsEnable()) {
                                 mRender.data.mClock.Reset();
                             }
@@ -672,11 +672,27 @@ public class Surface extends GLSurfaceView implements GestureDetector.OnGestureL
                             mRender.ClearHistory();
                             mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
                             return true;
-                        case Menu.menu_do_size_floppy_cube_555:
+                        case Menu.menu_do_size_floppy_cube_133:
                             if (mRender.data.mClock.IsEnable()) {
                                 mRender.data.mClock.Reset();
                             }
                             mRender.data.mFigure.SetFigure(Structures.FLOPPY_CUBE, 1);
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_do_size_floppy_cube_144:
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.data.mFigure.SetFigure(Structures.FLOPPY_CUBE, 2);
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_do_size_floppy_cube_155:
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.data.mFigure.SetFigure(Structures.FLOPPY_CUBE, 3);
                             mRender.ClearHistory();
                             mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
                             return true;

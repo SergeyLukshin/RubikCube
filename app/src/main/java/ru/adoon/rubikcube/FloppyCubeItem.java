@@ -303,12 +303,13 @@ public class FloppyCubeItem {
             //if (posX == 0) verge_color_index[3] = Cube.GREEN;
             //if (posX == mCubeDimX - 1) verge_color_index[1] = Cube.BLUE;
             if (posY == (mCubeDimY - 1)/ 2) {
-                verge_color_index[3] = Cube.GREEN;
-                verge_color_index[1] = Cube.BLUE;
-                verge_color_index[5] = Cube.YELLOW;
+                if (posZ == mCubeDimZ - 1) verge_color_index[0] = Cube.RED;
+                if (posX == mCubeDimX - 1) verge_color_index[1] = Cube.BLUE;
+                if (posZ == 0) verge_color_index[2] = Cube.ORANGE;
+                if (posX == 0) verge_color_index[3] = Cube.GREEN;
+
                 verge_color_index[4] = Cube.WHITE;
-                verge_color_index[2] = Cube.ORANGE;
-                verge_color_index[0] = Cube.RED;
+                verge_color_index[5] = Cube.YELLOW;
             }
             //if (posZ == 0) verge_color_index[2] = Cube.ORANGE;
             //if (posZ == mCubeDimZ - 1) verge_color_index[0] = Cube.RED;
