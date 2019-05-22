@@ -1,8 +1,14 @@
 package ru.adoon.rubikcube;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView.Renderer;
+import android.os.Build;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -97,34 +103,72 @@ public class GLRenderer implements Renderer {
             data.mBackSprite.SetRatio(m_width, m_height, m_ratio, 1);
             data.mMenu.SetRatio(m_width, m_height, m_ratio, 1);
             data.mClock.SetRatio(m_width, m_height, m_ratio, 1);
+            data.mMoves.SetRatio(m_width, m_height, m_ratio, 1);
             data.mLockSprite.SetRatio(m_width, m_height, m_ratio, 1);
+            data.mSoundSprite.SetRatio(m_width, m_height, m_ratio, 1);
         } else {
             data.mSettingsSprite.SetRatio(m_width, m_height, 1, m_ratio);
             data.mBackSprite.SetRatio(m_width, m_height, 1, m_ratio);
             data.mMenu.SetRatio(m_width, m_height, 1, m_ratio);
             data.mClock.SetRatio(m_width, m_height, 1, m_ratio);
+            data.mMoves.SetRatio(m_width, m_height, 1, m_ratio);
             data.mLockSprite.SetRatio(m_width, m_height, 1, m_ratio);
+            data.mSoundSprite.SetRatio(m_width, m_height, 1, m_ratio);
         }
+
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            // Для устройств до Android 5
+            createOldSoundPool();
+        } else {
+            // Для новых устройств
+            createNewSoundPool();
+        }
+
+        data.mAssetManager = context.getAssets();
+        data.mClickSound = data.loadSound("click.wav");
+        data.mediaPlayer = new MediaPlayer();
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void createNewSoundPool() {
+        AudioAttributes attributes = new AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_GAME)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build();
+        data.mSoundPool = new SoundPool.Builder()
+                .setAudioAttributes(attributes)
+                .build();
+    }
+
+    @SuppressWarnings("deprecation")
+    private void createOldSoundPool() {
+        data.mSoundPool = new SoundPool(2, AudioManager.STREAM_MUSIC, 0);
     }
 
     public void AddHistory (Action ah) {
         mHistory.add(ah);
-        if (data != null)
-            data.mCntSteps ++;
+        if (data != null) {
+            data.mCntSteps++;
+            data.mMoves.SetVal(data.mCntSteps);
+        }
     }
 
     public void RemoveLastHistory () {
         if (mHistory.size() > 0) {
             mHistory.remove(mHistory.size() - 1);
-            if (data != null)
+            if (data != null) {
                 data.mCntSteps--;
+                data.mMoves.SetVal(data.mCntSteps);
+            }
         }
     }
 
     public void ClearHistory() {
         mHistory.clear();
-        if (data != null)
+        if (data != null) {
             data.mCntSteps = 0;
+            data.mMoves.SetVal(data.mCntSteps);
+        }
     }
 
     public void ActionFigureMix(int cnt) {
@@ -217,13 +261,10 @@ public class GLRenderer implements Renderer {
 
         //Camera.setfrustumMProj(left, right, bottom, top, near, far);
         if (Camera.mFirstStart) {
-            Camera.mDeltaX = 45;
-            Camera.setLookAtM();
-            Camera.mDeltaY = 20;
-            Camera.setLookAtM();
+            Camera.InitCamera();
         }
         else
-            Camera.setLookAtM();
+            Camera.setLookAtM(data.mRotateState, 0, 0);
     }
 
     @Override
@@ -237,6 +278,7 @@ public class GLRenderer implements Renderer {
         if (data.mMenu == null) return;
         if (data.mBackSprite == null) return;
         if (data.mLockSprite == null) return;
+        if (data.mSoundSprite == null) return;
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -252,14 +294,17 @@ public class GLRenderer implements Renderer {
         glUseProgram(programIdSprite);
         data.mBackground.Draw();
         data.mClock.Draw(data.mMenu.MenuIsEnable());
+        data.mMoves.Draw(data.mMenu.MenuIsEnable(), data.mClock.IsEnable());
+
         if (!data.mMenu.MenuIsEnable()) {
             data.mSettingsSprite.Draw();
             if (mHistory.size() > 0)
                 data.mBackSprite.Draw();
-            data.mLockSprite.Draw();
+            data.mLockSprite.Draw(data.mRotateBlockType);
+            data.mSoundSprite.Draw();
         }
 
-        Camera.setLookAtM();
+        Camera.setLookAtM(data.mRotateState, data.mFigure.GetMaxXRotateAngle(), data.mFigure.GetMaxYRotateAngle());
 
         glDisable(GL_BLEND);
         glUseProgram(programIdCube);
@@ -286,12 +331,15 @@ public class GLRenderer implements Renderer {
         if (a != null) {
             boolean res = false;
             if (data.mFigure.IsActionCorrect(a)) {
+                data.playSound(data.mClickSound, 1f, 0, 0);
                 res = data.mFigure.StoreItemPosition(a);
             }
             if (mActions.list.size() == 0)
                 data.SaveData();
 
             if (res) {
+                data.playWin();
+
                 if (data.mClock.IsEnable())
                     data.mMenu.MenuShow(Menu.menu_do_complete);
                 else

@@ -24,11 +24,11 @@ import static android.opengl.GLES20.glVertexAttribPointer;
  * Created by Лукшин on 28.05.2018.
  */
 
-public class LockSprite {
+public class SoundSprite {
     public FloatBuffer vertexData;
     private float[] mModelMatrix = new float[16];
-    private int textureLock;
-    private int textureUnlock;
+    private int textureOn;
+    private int textureOff;
     private Context context;
     private int type = 1;
 
@@ -71,18 +71,18 @@ public class LockSprite {
             return false;
     }
 
-    LockSprite(Context context) {
+    SoundSprite(Context context) {
         this.context = context;
-        textureLock = TextureUtils.loadTexture(context, R.drawable.lock);
-        textureUnlock = TextureUtils.loadTexture(context, R.drawable.unlock);
+        textureOn = TextureUtils.loadTexture(context, R.drawable.sound_on);
+        textureOff = TextureUtils.loadTexture(context, R.drawable.sound_off);
     }
 
     public void SetContext(Context context) {
-        TextureUtils.deleteTexture(textureLock);
-        TextureUtils.deleteTexture(textureUnlock);
+        TextureUtils.deleteTexture(textureOn);
+        TextureUtils.deleteTexture(textureOff);
 
-        textureLock = TextureUtils.loadTexture(context, R.drawable.lock);
-        textureUnlock = TextureUtils.loadTexture(context, R.drawable.unlock);
+        textureOn = TextureUtils.loadTexture(context, R.drawable.sound_on);
+        textureOff = TextureUtils.loadTexture(context, R.drawable.sound_off);
     }
 
     public void SetRatio(float parentWidth, float parentHeight, float ratioX, float ratioY) {
@@ -90,16 +90,16 @@ public class LockSprite {
         float Height = mSizeGL / ratioY;
         float Width = mSizeGL / ratioX;
         float[] vertices = {
-                -1,  -1 + Height, -1,   0, 0,
-                -1, -1, -1,   0, 1,
-                -1 + Width, -1 + Height, -1,   1, 0,
-                -1 + Width, -1, -1,   1, 1,
+                -1,  1, -1,   0, 0,
+                -1, 1 - Height, -1,   0, 1,
+                -1 + Width, 1, -1,   1, 0,
+                -1 + Width, 1 - Height, -1,   1, 1,
         };
 
         mHeight = Structures.GetRealSizeFromGL(parentHeight, Height);
         mWidth = Structures.GetRealSizeFromGL(parentWidth, Width);
 
-        mTop = parentHeight - mHeight;
+        mTop = 0;
         mLeft = 0;
 
         vertexData = ByteBuffer
@@ -111,9 +111,8 @@ public class LockSprite {
         Matrix.setIdentityM(mModelMatrix, 0);
     }
 
-    public void Draw(int rotateBlockType) {
-        if (rotateBlockType == Structures.ROTATE_BLOCK_NONE)
-            return;
+    public void Draw() {
+        //glEnable(GL_BLEND);
 
         vertexData.position(0);
         glVertexAttribPointer(SpriteItemLocation.aPositionLocation, POSITION_COUNT, GL_FLOAT,
@@ -128,10 +127,10 @@ public class LockSprite {
 
         // помещаем текстуру в target 2D юнита 0
         glActiveTexture(GL_TEXTURE0);
-        if (type == 0)
-            glBindTexture(GL_TEXTURE_2D, textureLock);
+        if (type != 0)
+            glBindTexture(GL_TEXTURE_2D, textureOn);
         else
-            glBindTexture(GL_TEXTURE_2D, textureUnlock);
+            glBindTexture(GL_TEXTURE_2D, textureOff);
 
         // юнит текстуры
         glUniform1i(SpriteItemLocation.uTextureUnitLocation, 0);

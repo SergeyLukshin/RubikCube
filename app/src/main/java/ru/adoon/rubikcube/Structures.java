@@ -24,6 +24,7 @@ public class Structures {
     public static final int ACTION_SCALE = 1;
     public static final int ACTION_MOVE = 2;
     public static final int ACTION_DO = 3;
+    public static final int ACTION_AUTO_MOVE = 4;
     //public static final int ACTION_DOWN = 4;
 
     public static final int AXE_X = 0;
@@ -39,8 +40,13 @@ public class Structures {
     public static final int DIRECT_RIGHT = 1;
     public static final int DIRECT_NONE = 0;
 
-    public static final int ROTATE_ALL_FIGURE = 0;
-    public static final int ROTATE_CAMERA_FIGURE = 1;
+    public static final int ROTATE_ONLY_AXES = 0;
+    public static final int ROTATE_ALL_DIRECTION = 1;
+
+    public static final int ROTATE_BLOCK_NONE = 0;
+    public static final int ROTATE_BLOCK_ALL_FIGURE = 1;
+    public static final int ROTATE_BLOCK_CAMERA_FIGURE = 2;
+    //public static final int ROTATE_ONLY_AXES = 2;
 
     public static final int LOCK_CAMERA = 0;
     public static final int UNLOCK = 1;
@@ -48,6 +54,10 @@ public class Structures {
     public static final int ALIGN_CENTER = 0;
     public static final int ALIGN_RIGHT = 1;
     public static final int ALIGN_LEFT = 2;
+
+    public static final int CAMERA_NONE = 0;
+    public static final int CAMERA_UP = 1;
+    public static final int CAMERA_DOWN = 2;
 
     public static float[] Light = new float[4];
     public static float[] CameraEye = new float[4];

@@ -19,21 +19,33 @@ public class Menu {
     public static final int menu_do_complete = 3;
     public static final int menu_do_figure = 4;
     public static final int menu_do_rotate = 5;
-    public static final int menu_do_main_no_exit = 6;
+    public static final int menu_do_resume = 6;
     public static final int menu_do_complete_no_time = 7;
     public static final int menu_do_size_cube = 8;
     public static final int menu_do_size_pyramid = 9;
     public static final int menu_do_size_dcube = 10;
     public static final int menu_do_size_empty_cube = 11;
     public static final int menu_do_size_floppy_cube = 12;
+    public static final int menu_do_language = 13;
+    public static final int menu_do_rotate_axes = 14;
+    public static final int menu_do_rotate_block = 15;
+    public static final int menu_do_camera_speed = 16;
 
     public static final int menu_none = -1;
 
-    public static final int menu_do_main_new_game = 0;
-    public static final int menu_do_main_timer = 1;
-    public static final int menu_do_main_figure = 2;
-    public static final int menu_do_main_rotate = 3;
-    public static final int menu_do_main_exit = 4;
+    public static final int menu_do_main_language = 0;
+    public static final int menu_do_main_new_game = 1;
+    public static final int menu_do_main_timer = 2;
+    public static final int menu_do_main_figure = 3;
+    public static final int menu_do_main_rotate = 4;
+    public static final int menu_do_main_speed = 5;
+    public static final int menu_do_main_exit = 6;
+
+    public static final int menu_do_resume_new_game = 0;
+    public static final int menu_do_resume_timer = 1;
+    public static final int menu_do_resume_figure = 2;
+    public static final int menu_do_resume_rotate = 3;
+    public static final int menu_do_resume_speed = 4;
 
     public static final int menu_do_exit_exit = 0;
     public static final int menu_do_exit_yes = 1;
@@ -87,11 +99,32 @@ public class Menu {
     public static final int menu_do_size_floppy_cube_144 = 2;
     public static final int menu_do_size_floppy_cube_155 = 3;
 
-    public static final int menu_do_rotate_rotate_type = 0;
+    public static final int menu_do_rotate_axes_type = 0;
+    public static final int menu_do_rotate_any_type = 1;
+    public static final int menu_do_rotate_block_set = 2;
+
+    /*public static final int menu_do_rotate_rotate_type = 0;
     public static final int menu_do_rotate_rotate1 = 1;
     public static final int menu_do_rotate_rotate2 = 2;
-    public static final int menu_do_rotate_double_tap = 3;
+    public static final int menu_do_rotate_double_tap = 3;*/
 
+    public static final int menu_do_russian = 0;
+    public static final int menu_do_english = 1;
+
+    public static final int menu_do_rotate_axes_visibility = 0;
+    public static final int menu_do_rotate_axes_1_side = 1;
+    public static final int menu_do_rotate_axes_2_side = 2;
+    public static final int menu_do_rotate_axes_3_side = 3;
+
+    public static final int menu_do_rotate_block_info = 0;
+    public static final int menu_do_rotate_block_none = 1;
+    public static final int menu_do_rotate_block_rotate1 = 2;
+    public static final int menu_do_rotate_block_rotate2 = 3;
+    public static final int menu_do_rotate_block_double_tap = 4;
+
+    public static final int menu_do_1_camera_speed = 0;
+    public static final int menu_do_1_5_camera_speed = 1;
+    public static final int menu_do_2_camera_speed = 2;
 
     //public static final int menu_new_game3 = 1;
     //public static final int menu_close3 = 2;
@@ -111,7 +144,17 @@ public class Menu {
 
     ArrayList<Integer> menuHistory = new ArrayList<Integer>();
 
+    //Context mCtx;
+    float mParentWidth;
+    float mParentHeight;
+    float mRatioX;
+    float mRatioY;
+
+    //int mLanguage;
+
     public void SetContext(Context context) {
+
+        //mCtx = context;
         mBackground.SetContext(context);
 
         for (int i = 0 ; i < menu.size(); i++) {
@@ -124,161 +167,231 @@ public class Menu {
         if (mStepCnt2 != null) mStepCnt2.SetContext(context);
     }
 
-    Menu(Context ctx)
+    Menu(Context mCtx, int language)
     {
+        //mCtx = ctx;
         //list.add(new MenuItemSprite(ctx, 0, 4, 1f * 422f / 460f, R.drawable.menu_settings, 0));
+        //mLanguage = language;
+
+        //SetLanguage(mCtx, language);
+
+        mTime = new TimeInfo(mCtx);
+        mStepCnt = new StepsInfo(mCtx);
+        mStepCnt2 = new StepsInfo(mCtx);
+
+        long origThreadID = Thread.currentThread().getId();
+
+        //list.add(new MenuItemSprite(ctx, 0, 4, 1f * 422f / 460f, R.drawable.menu_settings, 0));
+        /*for (int i = 0 ; i < menu.size(); i++) {
+            for (int j = 0; j < menu.get(i).size(); j++)
+                menu.get(i).get(j).DeleteTexture();
+        }*/
+
+        menu.clear();
+
         ArrayList<MenuItemSprite> list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_main_new_game, 5, 1f * 422f / 460f, R.drawable.menu_new_game, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_main_timer, 5, 1f * 400f / 460f, R.drawable.menu_timer_off, R.drawable.menu_timer_on, true));
-            list.add(new MenuItemSprite(ctx, menu_do_main_figure, 5, 1f * 420f / 460f, R.drawable.menu_figure, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_main_rotate, 5, 1f * 460f / 460f, R.drawable.menu_rotate, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_main_exit, 5, 1f * 260f / 460f, R.drawable.menu_exit2, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_main_language, 7, R.drawable.menu_language, 0, R.drawable.menu_language, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_main_new_game, 7, R.drawable.menu_new_game, 0, R.drawable.menu_new_game_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_main_timer, 7, R.drawable.menu_timer_off, R.drawable.menu_timer_on, R.drawable.menu_timer_off_en, R.drawable.menu_timer_on_en, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_main_figure, 7, R.drawable.menu_figure, 0, R.drawable.menu_figure_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_main_rotate, 7, R.drawable.menu_rotate, 0, R.drawable.menu_rotate_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_main_speed, 7, R.drawable.menu_camera_speed, 0, R.drawable.menu_camera_speed_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_main_exit, 7, R.drawable.menu_exit2, 0, R.drawable.menu_exit2_en, 0, true));
         }
         menu.add(list);
 
         list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_shuffle_shuffle, 3, 1f * 470f / 460f, R.drawable.menu_shuffle, 0, false));
-            list.add(new MenuItemSprite(ctx, menu_do_shuffle_yes, 3, 1f * 210f / 460f, R.drawable.menu_yes, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_shuffle_no, 3, 1f * 210f / 460f, R.drawable.menu_no, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_shuffle_shuffle, 3, R.drawable.menu_shuffle, 0, R.drawable.menu_shuffle_en, 0, false));
+            list.add(new MenuItemSprite(mCtx, menu_do_shuffle_yes, 3, R.drawable.menu_yes, 0, R.drawable.menu_yes_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_shuffle_no, 3, R.drawable.menu_no, 0, R.drawable.menu_no_en, 0, true));
         }
         menu.add(list);
 
         list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_exit_exit, 3, 1f * 470f / 460f, R.drawable.menu_exit, 0, false));
-            list.add(new MenuItemSprite(ctx, menu_do_exit_yes, 3, 1f * 210f / 460f, R.drawable.menu_yes, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_exit_no, 3, 1f * 210f / 460f, R.drawable.menu_no, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_exit_exit, 3, R.drawable.menu_exit, 0, R.drawable.menu_exit_en, 0, false));
+            list.add(new MenuItemSprite(mCtx, menu_do_exit_yes, 3, R.drawable.menu_yes, 0, R.drawable.menu_yes_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_exit_no, 3, R.drawable.menu_no, 0, R.drawable.menu_no_en, 0, true));
         }
         menu.add(list);
 
         list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_complete_complete, 5, 1f * 701f / 460f, R.drawable.menu_complete, 0, false));
-            list.add(new MenuItemSprite(ctx, menu_do_complete_time, 5, 1f * 440f / 460f, R.drawable.menu_time, 0, false));
-            list.add(new MenuItemSprite(ctx, menu_do_complete_time_val, 5, 0, 0, 0, false));
-            list.add(new MenuItemSprite(ctx, menu_do_complete_cnt_steps, 5, 1f * 440f / 460f, R.drawable.menu_cnt_steps, 0, false));
-            list.add(new MenuItemSprite(ctx, menu_do_complete_cnt_steps_val, 5, 0, 0, 0, false));
+            list.add(new MenuItemSprite(mCtx, menu_do_complete_complete, 5, R.drawable.menu_complete, 0, R.drawable.menu_complete_en, 0, false));
+            list.add(new MenuItemSprite(mCtx, menu_do_complete_time, 5, R.drawable.menu_time, 0, R.drawable.menu_time_en, 0, false));
+            list.add(new MenuItemSprite(mCtx, menu_do_complete_time_val, 5, 0, 0, false));
+            list.add(new MenuItemSprite(mCtx, menu_do_complete_cnt_steps, 5, R.drawable.menu_cnt_steps, 0, R.drawable.menu_cnt_steps_en, 0, false));
+            list.add(new MenuItemSprite(mCtx, menu_do_complete_cnt_steps_val, 5, 0, 0, false));
             //list.add(new MenuItemSprite(ctx, menu_new_game2, 7, 1f * 422f / 460f, R.drawable.menu_new_game, 0, true));
             //list.add(new MenuItemSprite(ctx, menu_close2, 7, 1f * 350f / 460f, R.drawable.menu_close, 0, true));
-
-            mTime = new TimeInfo(ctx);
-            mStepCnt = new StepsInfo(ctx);
         }
         menu.add(list);
 
         list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_figure_cube, 5, 1f * 210f / 460f, R.drawable.menu_cube, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_figure_pyramid, 5, 1f * 370f / 460f, R.drawable.menu_pyramid, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_figure_domino_cube, 5, 1f * 420f / 460f, R.drawable.menu_dcube, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_figure_empty_cube, 5, 1f * 360f / 460f, R.drawable.menu_empty_cube, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_figure_floppy_cube, 5, 1f * 420f / 460f, R.drawable.menu_fcube, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_figure_cube, 5, R.drawable.menu_cube, 0, R.drawable.menu_cube_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_figure_pyramid, 5, R.drawable.menu_pyramid, 0, R.drawable.menu_pyramid_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_figure_domino_cube, 5, R.drawable.menu_dcube, 0, R.drawable.menu_dcube_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_figure_empty_cube, 5, R.drawable.menu_empty_cube, 0, R.drawable.menu_empty_cube_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_figure_floppy_cube, 5, R.drawable.menu_fcube, 0, R.drawable.menu_fcube_en, 0, true));
         }
         menu.add(list);
 
         list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_rotate_rotate_type, 4, 1f * 300f / 460f, R.drawable.menu_rotate_type, 0, false));
-            list.add(new MenuItemSprite(ctx, menu_do_rotate_rotate1, 4, 1f * 760f / 460f, R.drawable.menu_rotate1, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_rotate_rotate2, 4, 1f * 520f / 460f, R.drawable.menu_rotate2, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_rotate_double_tap, 4, 1f * 520f / 460f, R.drawable.menu_double_tap_off, R.drawable.menu_double_tap_on, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_rotate_axes_type, 3, R.drawable.menu_only_axes, 0, R.drawable.menu_only_axes_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_rotate_any_type, 3, R.drawable.menu_any, 0, R.drawable.menu_any_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_rotate_block_set, 3, R.drawable.menu_block, 0, R.drawable.menu_block_en, 0, true));
         }
         menu.add(list);
 
         list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_main_new_game, 4, 1f * 422f / 460f, R.drawable.menu_new_game, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_main_timer, 4, 1f * 400f / 460f, R.drawable.menu_timer_off, R.drawable.menu_timer_on, true));
-            list.add(new MenuItemSprite(ctx, menu_do_main_figure, 4, 1f * 420f / 460f, R.drawable.menu_figure, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_main_rotate, 4, 1f * 460f / 460f, R.drawable.menu_rotate, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_resume_new_game, 5, R.drawable.menu_new_game, 0, R.drawable.menu_new_game_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_resume_timer, 5, R.drawable.menu_timer_off, R.drawable.menu_timer_on, R.drawable.menu_timer_off_en, R.drawable.menu_timer_on_en, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_resume_figure, 5, R.drawable.menu_figure, 0, R.drawable.menu_figure_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_resume_rotate, 5, R.drawable.menu_rotate, 0, R.drawable.menu_rotate_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_resume_speed, 5, R.drawable.menu_camera_speed, 0, R.drawable.menu_camera_speed_en, 0, true));
         }
         menu.add(list);
 
         list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_complete_no_time_complete, 3, 1f * 701f / 460f, R.drawable.menu_complete, 0, false));
-            list.add(new MenuItemSprite(ctx, menu_do_complete_no_time_cnt_steps, 3, 1f * 440f / 460f, R.drawable.menu_cnt_steps, 0, false));
-            list.add(new MenuItemSprite(ctx, menu_do_complete_no_time_cnt_steps_val, 3, 0, 0, 0, false));
-            //list.add(new MenuItemSprite(ctx, menu_new_game3, 3, 1f * 422f / 460f, R.drawable.menu_new_game, 0, true));
-            //list.add(new MenuItemSprite(ctx, menu_close3, 3, 1f * 350f / 460f, R.drawable.menu_close, 0, true));
-            mStepCnt2 = new StepsInfo(ctx);
+            list.add(new MenuItemSprite(mCtx, menu_do_complete_no_time_complete, 3, R.drawable.menu_complete, 0, R.drawable.menu_complete_en, 0, false));
+            list.add(new MenuItemSprite(mCtx, menu_do_complete_no_time_cnt_steps, 3, R.drawable.menu_cnt_steps, 0, R.drawable.menu_cnt_steps_en, 0, false));
+            list.add(new MenuItemSprite(mCtx, menu_do_complete_no_time_cnt_steps_val, 3, 0, 0, false));
         }
         menu.add(list);
 
         list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_size_cube_222, 4, 1f * 240f / 460f, R.drawable.menu_size222, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_cube_333, 4, 1f * 240f / 460f, R.drawable.menu_size333, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_cube_444, 4, 1f * 240f / 460f, R.drawable.menu_size444, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_cube_555, 4, 1f * 240f / 460f, R.drawable.menu_size555, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_cube_222, 4, R.drawable.menu_size222, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_cube_333, 4, R.drawable.menu_size333, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_cube_444, 4, R.drawable.menu_size444, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_cube_555, 4, R.drawable.menu_size555, 0, true));
         }
         menu.add(list);
 
         list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_size_pyramid_222, 4, 1f * 240f / 460f, R.drawable.menu_size222, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_pyramid_333, 4, 1f * 240f / 460f, R.drawable.menu_size333, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_pyramid_444, 4, 1f * 240f / 460f, R.drawable.menu_size444, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_pyramid_555, 4, 1f * 240f / 460f, R.drawable.menu_size555, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_pyramid_222, 4, R.drawable.menu_size222, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_pyramid_333, 4, R.drawable.menu_size333, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_pyramid_444, 4, R.drawable.menu_size444, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_pyramid_555, 4, R.drawable.menu_size555, 0, true));
         }
         menu.add(list);
 
         list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_size_dcube_233, 6, 1f * 240f / 460f, R.drawable.menu_size233, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_dcube_244, 6, 1f * 240f / 460f, R.drawable.menu_size244, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_dcube_344, 6, 1f * 240f / 460f, R.drawable.menu_size344, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_dcube_255, 6, 1f * 240f / 460f, R.drawable.menu_size255, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_dcube_355, 6, 1f * 240f / 460f, R.drawable.menu_size355, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_dcube_455, 6, 1f * 240f / 460f, R.drawable.menu_size455, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_dcube_233, 6, R.drawable.menu_size233, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_dcube_244, 6, R.drawable.menu_size244, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_dcube_344, 6, R.drawable.menu_size344, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_dcube_255, 6, R.drawable.menu_size255, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_dcube_355, 6, R.drawable.menu_size355, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_dcube_455, 6, R.drawable.menu_size455, 0, true));
         }
         menu.add(list);
 
         list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_size_empty_cube_333, 2, 1f * 240f / 460f, R.drawable.menu_size333, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_empty_cube_555, 2, 1f * 240f / 460f, R.drawable.menu_size555, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_empty_cube_333, 2, R.drawable.menu_size333, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_empty_cube_555, 2, R.drawable.menu_size555, 0, true));
         }
         menu.add(list);
 
         list = new ArrayList<MenuItemSprite>();
         {
-            list.add(new MenuItemSprite(ctx, menu_do_size_floppy_cube_122, 4, 1f * 240f / 460f, R.drawable.menu_size122, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_floppy_cube_133, 4, 1f * 240f / 460f, R.drawable.menu_size133, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_floppy_cube_144, 4, 1f * 240f / 460f, R.drawable.menu_size144, 0, true));
-            list.add(new MenuItemSprite(ctx, menu_do_size_floppy_cube_155, 4, 1f * 240f / 460f, R.drawable.menu_size155, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_floppy_cube_122, 4, R.drawable.menu_size122, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_floppy_cube_133, 4, R.drawable.menu_size133, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_floppy_cube_144, 4, R.drawable.menu_size144, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_size_floppy_cube_155, 4, R.drawable.menu_size155, 0, true));
         }
         menu.add(list);
 
-        mBackground = new Background(ctx, true);
+        list = new ArrayList<MenuItemSprite>();
+        {
+            list.add(new MenuItemSprite(mCtx, menu_do_russian, 2, R.drawable.menu_russian, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_english, 2, R.drawable.menu_english, 0, true));
+        }
+        menu.add(list);
+
+        list = new ArrayList<MenuItemSprite>();
+        {
+            list.add(new MenuItemSprite(mCtx, menu_do_rotate_axes_visibility, 4, R.drawable.menu_visibility, 0, R.drawable.menu_visibility_en, 0, false));
+            list.add(new MenuItemSprite(mCtx, menu_do_rotate_axes_1_side, 4, R.drawable.menu_1_side, 0, R.drawable.menu_1_side_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_rotate_axes_2_side, 4, R.drawable.menu_2_side, 0, R.drawable.menu_2_side_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_rotate_axes_3_side, 4, R.drawable.menu_3_side, 0, R.drawable.menu_3_side_en, 0, true));
+        }
+        menu.add(list);
+
+        list = new ArrayList<MenuItemSprite>();
+        {
+            list.add(new MenuItemSprite(mCtx, menu_do_rotate_block_info, 5, R.drawable.menu_rotate_type, 0, R.drawable.menu_rotate_type, 0, false));
+            list.add(new MenuItemSprite(mCtx, menu_do_rotate_block_none, 5, R.drawable.menu_no, 0, R.drawable.menu_no_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_rotate_block_rotate1, 5, R.drawable.menu_rotate1, 0, R.drawable.menu_rotate1_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_rotate_block_rotate2, 5, R.drawable.menu_rotate2, 0, R.drawable.menu_rotate2_en, 0, true));
+            list.add(new MenuItemSprite(mCtx, menu_do_rotate_block_double_tap, 5, R.drawable.menu_double_tap_off, R.drawable.menu_double_tap_on, R.drawable.menu_double_tap_off_en, R.drawable.menu_double_tap_on_en, true));
+        }
+        menu.add(list);
+
+        list = new ArrayList<MenuItemSprite>();
+        {
+            list.add(new MenuItemSprite(mCtx, menu_do_1_camera_speed, 3, R.drawable.menu_1_speed, 0,true));
+            list.add(new MenuItemSprite(mCtx, menu_do_1_5_camera_speed, 3, R.drawable.menu_1_5_speed, 0,true));
+            list.add(new MenuItemSprite(mCtx, menu_do_2_camera_speed, 3, R.drawable.menu_2_speed, 0,true));
+        }
+        menu.add(list);
+
+        SetLanguage(language);
+
+        mBackground = new Background(mCtx, true);
     }
 
-    public void SetRatio(float parentWidth, float parentHeight,
-         float ratioX, float ratioY)
+    public void SetLanguage(int language)
     {
+        //mLanguage = language;
+
+        for (int i = 0 ; i < menu.size(); i++) {
+            for (int j = 0; j < menu.get(i).size(); j++)
+                menu.get(i).get(j).SetLanguage(language);
+        }
+    }
+
+    public void SetRatio() {
         for (int i = 0 ; i < menu.size(); i++) {
             for (int j = 0; j < menu.get(i).size(); j++) {
-                menu.get(i).get(j).SetRatio(parentWidth, parentHeight, ratioX, ratioY);
+                menu.get(i).get(j).SetRatio(mParentWidth, mParentHeight, mRatioX, mRatioY);
                 menu.get(i).get(j).SetPos(dist);
             }
         }
 
         if (mTime != null) {
             mTime.SetY(menu.get(menu_do_complete).get(menu_do_complete_time_val).GetPosY());
-            mTime.SetRatio(parentWidth, parentHeight, ratioX, ratioY);
+            mTime.SetRatio(mParentWidth, mParentHeight, mRatioX, mRatioY);
         }
 
         if (mStepCnt != null) {
             mStepCnt.SetY(menu.get(menu_do_complete).get(menu_do_complete_cnt_steps_val).GetPosY());
-            mStepCnt.SetRatio(parentWidth, parentHeight, ratioX, ratioY);
+            mStepCnt.SetRatio(mParentWidth, mParentHeight, mRatioX, mRatioY);
         }
 
         if (mStepCnt2 != null) {
             mStepCnt2.SetY(menu.get(menu_do_complete_no_time).get(menu_do_complete_no_time_cnt_steps_val).GetPosY());
-            mStepCnt2.SetRatio(parentWidth, parentHeight, ratioX, ratioY);
+            mStepCnt2.SetRatio(mParentWidth, mParentHeight, mRatioX, mRatioY);
         }
+    }
+
+    public void SetRatio(float parentWidth, float parentHeight,
+         float ratioX, float ratioY)
+    {
+        mParentWidth = parentWidth;
+        mParentHeight = parentHeight;
+        mRatioX = ratioX;
+        mRatioY = ratioY;
+
+        SetRatio();
     }
 
     public void SetTexture(int index, int pos) {
@@ -330,7 +443,7 @@ public class Menu {
             }
         }
 
-        if (activeMenuIndex == menu_do_main || activeMenuIndex == menu_do_main_no_exit)
+        if (activeMenuIndex == menu_do_main || activeMenuIndex == menu_do_resume)
             menuHistory.clear();
 
         menuHistory.add(activeMenuIndex);

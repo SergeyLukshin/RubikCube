@@ -286,7 +286,7 @@ public class Surface extends GLSurfaceView implements GestureDetector.OnGestureL
         if (mRender == null) return true;
         if (mRender.data == null) return true;
 
-        if (mRender.data.mDoubleTap)
+        if (mRender.data.mDoubleTap && mRender.data.mRotateBlockType != Structures.ROTATE_BLOCK_NONE)
             mRender.data.mLockSprite.SetNextType();
         return true;
     }
@@ -299,6 +299,20 @@ public class Surface extends GLSurfaceView implements GestureDetector.OnGestureL
         if (mRender == null) return true;
         if (mRender.mActions == null) return true;
         if (mRender.data == null) return true;
+
+        if (mAction == Structures.ACTION_AUTO_MOVE) {
+
+            if (Camera.getStop()) {
+                mAction = Structures.ACTION_NONE;
+            }
+            else {
+
+                mPreviousX = -1;
+                mPreviousY = -1;
+
+                return true;
+            }
+        }
 
         if (mRender.mActions.ActionIsEnable()) {
             mAction = Structures.ACTION_NONE;
@@ -373,8 +387,7 @@ public class Surface extends GLSurfaceView implements GestureDetector.OnGestureL
                 if (index != Menu.menu_none && mRender.data.mMenu.GetActiveMenuIndex() >= 0 && !mRender.data.mMenu.menu.get(mRender.data.mMenu.GetActiveMenuIndex()).get(index).IsEnabled())
                     return true;
 
-                if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_main ||
-                        mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_main_no_exit) {
+                if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_main) {
 
                     mRender.data.mMenu.MenuClose();
 
@@ -401,11 +414,17 @@ public class Surface extends GLSurfaceView implements GestureDetector.OnGestureL
                         case Menu.menu_do_main_rotate:
                             mRender.data.mMenu.MenuShow(Menu.menu_do_rotate);
 
-                            if (!mRender.data.mDoubleTap)
+                            /*if (!mRender.data.mDoubleTap)
                                 mRender.data.mMenu.SetTexture(Menu.menu_do_rotate_double_tap, 0);
                             else
-                                mRender.data.mMenu.SetTexture(Menu.menu_do_rotate_double_tap, 1);
+                                mRender.data.mMenu.SetTexture(Menu.menu_do_rotate_double_tap, 1);*/
 
+                            return true;
+                        case Menu.menu_do_main_speed:
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_camera_speed);
+                            return true;
+                        case Menu.menu_do_main_language:
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_language);
                             return true;
                         case Menu.menu_none:
                             break;
@@ -414,6 +433,48 @@ public class Surface extends GLSurfaceView implements GestureDetector.OnGestureL
                             return true;
                     }
                 }
+
+                if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_resume) {
+
+                    mRender.data.mMenu.MenuClose();
+
+                    switch (index) {
+                        case Menu.menu_do_resume_new_game:
+                            //mRender.ActionCubeMix(30);
+                            if (mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Reset();
+                            }
+                            mRender.ClearHistory();
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_shuffle);
+                            return true;
+                        case Menu.menu_do_resume_figure:
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_figure);
+                            return true;
+                        case Menu.menu_do_resume_timer:
+                            if (!mRender.data.mClock.IsEnable()) {
+                                mRender.data.mClock.Start();
+                                mRender.data.mClock.Pause();
+                            } else {
+                                mRender.data.mClock.Stop();
+                            }
+                            break;
+                        case Menu.menu_do_resume_rotate:
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_rotate);
+
+                            /*if (!mRender.data.mDoubleTap)
+                                mRender.data.mMenu.SetTexture(Menu.menu_do_rotate_double_tap, 0);
+                            else
+                                mRender.data.mMenu.SetTexture(Menu.menu_do_rotate_double_tap, 1);*/
+
+                            return true;
+                        case Menu.menu_do_resume_speed:
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_camera_speed);
+                            return true;
+                        case Menu.menu_none:
+                            break;
+                    }
+                }
+
                 if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_shuffle) {
 
                     mRender.data.mMenu.MenuClose();
@@ -706,13 +767,67 @@ public class Surface extends GLSurfaceView implements GestureDetector.OnGestureL
                     mRender.data.mMenu.MenuClose();
 
                     switch (index) {
-                        case Menu.menu_do_rotate_rotate1:
-                            mRender.data.mRotateType = Structures.ROTATE_ALL_FIGURE;
+                        case Menu.menu_do_rotate_axes_type:
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_rotate_axes);
+                            return true;
+                        case Menu.menu_do_rotate_any_type:
+                            //mRender.data.mRotateBlockType = Structures.ROTATE_BLOCK_CAMERA_FIGURE;
+                            mRender.data.mRotateState = Structures.ROTATE_ALL_DIRECTION;
+                            Camera.InitCamera();
                             break;
-                        case Menu.menu_do_rotate_rotate2:
-                            mRender.data.mRotateType = Structures.ROTATE_CAMERA_FIGURE;
+                        case Menu.menu_do_rotate_block_set:
+                            mRender.data.mMenu.MenuShow(Menu.menu_do_rotate_block);
+
+                            if (!mRender.data.mDoubleTap)
+                                mRender.data.mMenu.SetTexture(Menu.menu_do_rotate_block_double_tap, 0);
+                            else
+                                mRender.data.mMenu.SetTexture(Menu.menu_do_rotate_block_double_tap, 1);
+                            return true;
+                        case Menu.menu_none:
                             break;
-                        case Menu.menu_do_rotate_double_tap:
+                    }
+                }
+
+                if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_rotate_axes) {
+
+                    mRender.data.mMenu.MenuClose();
+
+                    switch (index) {
+                        case Menu.menu_do_rotate_axes_1_side:
+                            mRender.data.mVisibleSides = 1;
+                            mRender.data.mRotateState = Structures.ROTATE_ONLY_AXES;
+                            Camera.InitCamera();
+                            break;
+                        case Menu.menu_do_rotate_axes_2_side:
+                            mRender.data.mVisibleSides = 2;
+                            mRender.data.mRotateState = Structures.ROTATE_ONLY_AXES;
+                            Camera.InitCamera();
+                            break;
+                        case Menu.menu_do_rotate_axes_3_side:
+                            mRender.data.mVisibleSides = 3;
+                            mRender.data.mRotateState = Structures.ROTATE_ONLY_AXES;
+                            Camera.InitCamera();
+                            break;
+                        case Menu.menu_none:
+                            break;
+                    }
+                }
+
+                if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_rotate_block) {
+
+                    mRender.data.mMenu.MenuClose();
+
+                    switch (index) {
+                        case Menu.menu_do_rotate_block_none:
+                            mRender.data.mRotateBlockType = Structures.ROTATE_BLOCK_NONE;
+                            break;
+                        case Menu.menu_do_rotate_block_rotate1:
+                            mRender.data.mRotateBlockType = Structures.ROTATE_BLOCK_ALL_FIGURE;
+                            break;
+                        case Menu.menu_do_rotate_block_rotate2:
+                            mRender.data.mRotateBlockType = Structures.ROTATE_BLOCK_CAMERA_FIGURE;
+                            break;
+                        case Menu.menu_do_rotate_block_double_tap:
                             mRender.data.mDoubleTap = !mRender.data.mDoubleTap;
                             break;
                         case Menu.menu_none:
@@ -735,12 +850,48 @@ public class Surface extends GLSurfaceView implements GestureDetector.OnGestureL
                     }*/
                 }
 
+                if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_language) {
+
+                    mRender.data.mMenu.MenuClose();
+
+                    switch (index) {
+                        case Menu.menu_do_russian:
+                            mRender.data.mLanguage = 0;
+                            mRender.data.mMenu.SetLanguage(mRender.data.mLanguage);
+                            break;
+                        case Menu.menu_do_english:
+                            mRender.data.mLanguage = 1;
+                            mRender.data.mMenu.SetLanguage(mRender.data.mLanguage);
+                            break;
+                    }
+                }
+
+                if (mRender.data.mMenu.GetActiveMenuIndex() == Menu.menu_do_camera_speed) {
+
+                    mRender.data.mMenu.MenuClose();
+
+                    switch (index) {
+                        case Menu.menu_do_1_camera_speed:
+                            Camera.mSpeed = 1;
+                            break;
+                        case Menu.menu_do_1_5_camera_speed:
+                            Camera.mSpeed = 1.5f;
+                            break;
+                        case Menu.menu_do_2_camera_speed:
+                            Camera.mSpeed = 2f;
+                            break;
+                        case Menu.menu_none:
+                            break;
+                    }
+                }
+
                 return true;
             }
 
             float[] tap = new float[2];
             tap[0] = x;
             tap[1] = y;
+            mTap = tap;
 
             if (mRender.mHistory.size() > 0 &&
                     mRender.data.mBackSprite.IsPressed(x, y)) {
@@ -768,25 +919,43 @@ public class Surface extends GLSurfaceView implements GestureDetector.OnGestureL
 
                 mRender.data.mMenu.MenuShow(Menu.menu_do_main);
 
-                if (!mRender.data.mClock.IsEnable())
+                if (!mRender.data.mClock.IsEnable()) {
                     mRender.data.mMenu.SetTexture(Menu.menu_do_main_timer, 0);
-                else
+                    //mRender.data.mMenu.SetTexture(Menu.menu_do_resume_timer, 0);
+                }
+                else {
                     mRender.data.mMenu.SetTexture(Menu.menu_do_main_timer, 1);
+                    //mRender.data.mMenu.SetTexture(Menu.menu_do_resume_timer, 1);
+                }
 
                 return true;
             }
 
-            if (mRender.data.mLockSprite.IsPressed(x, y)) {
+            if (mRender.data.mRotateBlockType != Structures.ROTATE_BLOCK_NONE && mRender.data.mLockSprite.IsPressed(x, y)) {
                 mRender.data.mLockSprite.SetNextType();
+
+                /*mRender.data.mLockSprite.SetType(0);
+                mDeltaX = 2;
+
+                Camera.mDeltaX = mDeltaX;
+                Camera.mDeltaXInertia = 0;
+
+                mAction = Structures.ACTION_MOVE;*/
+
                 return true;
             }
 
-            if (mRender.data.mRotateType == Structures.ROTATE_ALL_FIGURE
-                    || mRender.data.mRotateType == Structures.ROTATE_CAMERA_FIGURE &&
+            if (mRender.data.mSoundSprite.IsPressed(x, y)) {
+                mRender.data.mSoundSprite.SetNextType();
+                return true;
+            }
+
+            if (mRender.data.mRotateBlockType == Structures.ROTATE_BLOCK_NONE
+                    || mRender.data.mRotateBlockType == Structures.ROTATE_BLOCK_ALL_FIGURE
+                    || mRender.data.mRotateBlockType == Structures.ROTATE_BLOCK_CAMERA_FIGURE &&
                     mRender.data.mLockSprite.GetType() == Structures.LOCK_CAMERA) {
                 float[] ray;
                 ray = getViewRay(tap);
-                mTap = tap;
                 Structures.PointView = ray.clone();
                 Pair<int[], float[]> pr = mRender.data.mFigure.GetSelectItem(ray, Structures.CameraEye);
                 mSelectItem = pr.first;
@@ -804,19 +973,96 @@ public class Surface extends GLSurfaceView implements GestureDetector.OnGestureL
 
         if (mRender.data.mMenu.MenuIsEnable()) return true;
 
-        if (mRender.data.mLockSprite.GetType() == Structures.UNLOCK && event.getAction() == MotionEvent.ACTION_MOVE && pointerCount == 1 && mAction != Structures.ACTION_DO)
+        if (mRender.data.mLockSprite.GetType() == Structures.UNLOCK && event.getAction() == MotionEvent.ACTION_MOVE && pointerCount == 1 && mAction != Structures.ACTION_DO && mAction != Structures.ACTION_SCALE)
         {
             if (mPreviousX >= 0 && mPreviousY >= 0) {
-                mDeltaX = (x - mPreviousX) / mDensity / 2f;
-                mDeltaY = (y - mPreviousY) / mDensity / 2f;
 
-                Camera.mDeltaX = mDeltaX;
-                Camera.mDeltaY = mDeltaY;
+                if (mRender.data.mRotateState == Structures.ROTATE_ALL_DIRECTION) {
+                    mDeltaX = (x - mPreviousX) / mDensity / 2f;
+                    mDeltaY = (y - mPreviousY) / mDensity / 2f;
 
-                mPreviousX = x;
-                mPreviousY = y;
+                    if (Math.abs(mDeltaY) < Math.abs(mDeltaX / 2f)) mDeltaY = 0;
+                    if (Math.abs(mDeltaX) < Math.abs(mDeltaY / 2f)) mDeltaX = 0;
 
-                mAction = Structures.ACTION_MOVE;
+                    Camera.mDeltaX = mDeltaX * Camera.mSpeed;
+                    Camera.mDeltaY = mDeltaY * Camera.mSpeed;
+
+                    mPreviousX = x;
+                    mPreviousY = y;
+
+                    mAction = Structures.ACTION_MOVE;
+                }
+                if (mRender.data.mRotateState == Structures.ROTATE_ONLY_AXES) {
+                    double dist = Math.sqrt((x - mPreviousX) * (x - mPreviousX) + (y - mPreviousY) * (y - mPreviousY)) / mDensity / 2f;
+
+                    float[] tap = new float[2];
+                    tap[0] = x;
+                    tap[1] = y;
+                    if (Dist2D(mTap, tap) > Math.round(Math.min(mRender.m_height, mRender.m_width) / 50)) {
+                        float distX = x - mTap[0];
+                        float distY = y - mTap[1];
+
+                        if (Math.abs(distX) >= Math.abs(distY)) {
+                            if (x < mTap[0])
+                                mDeltaX = -10;
+                            else
+                                mDeltaX = 10;
+                            mDeltaY = 0;
+                        }
+                        else {
+                            if (y < mTap[1])
+                                mDeltaY = -10;
+                            else
+                                mDeltaY = 10;
+                            mDeltaX = 0;
+
+                            if (mRender.data.mVisibleSides == 3) {
+                                if (mDeltaY < 0) {
+                                    if (Camera.GetDirection() == Structures.CAMERA_DOWN) {
+                                        mDeltaY = 0;
+                                    }
+                                    Camera.SetDirection(Structures.CAMERA_DOWN);
+                                }
+                                else {
+                                    if (Camera.GetDirection() == Structures.CAMERA_UP) {
+                                        mDeltaY = 0;
+                                    }
+                                    Camera.SetDirection(Structures.CAMERA_UP);
+                                }
+                            }
+                            else {
+                                if (mRender.data.mFigure.GetFigure() == Structures.PYRAMID) {
+                                    int dir = Camera.GetDirection();
+                                    if (dir == Structures.CAMERA_DOWN || dir == Structures.CAMERA_UP)
+                                        Camera.SetDirection(Structures.CAMERA_NONE);
+                                    else {
+                                        if (mDeltaY < 0) Camera.SetDirection(Structures.CAMERA_DOWN);
+                                        else Camera.SetDirection(Structures.CAMERA_UP);
+                                    }
+                                }
+                            }
+                        }
+                        Camera.mDeltaY = 0;
+                        Camera.mDeltaX = 0;
+                        Camera.mTotalXZRotate = 0;
+                        Camera.mTotalYRotate = 0;
+
+                        if (mRender.data.mVisibleSides != 3
+                                && mRender.data.mFigure.GetFigure() == Structures.PYRAMID
+                                && Camera.GetDirection() != Structures.CAMERA_NONE) {
+                            Camera.mDeltaXInertia = 0;
+                            Camera.mDeltaYInertia = mDeltaY * Camera.mSpeed;
+                            Camera.mDeltaZInertia = mDeltaX * Camera.mSpeed;
+                        }
+                        else {
+                            Camera.mDeltaXInertia = mDeltaX * Camera.mSpeed;
+                            Camera.mDeltaYInertia = mDeltaY * Camera.mSpeed;
+                            Camera.mDeltaZInertia = 0;
+                        }
+
+                        mAction = Structures.ACTION_AUTO_MOVE;
+                    }
+                }
             }
         }
         if (event.getAction() == MotionEvent.ACTION_MOVE && mAction == Structures.ACTION_DO)
@@ -849,8 +1095,10 @@ public class Surface extends GLSurfaceView implements GestureDetector.OnGestureL
                 }
             }
         }
-        if (mRender.data.mLockSprite.GetType() == Structures.UNLOCK && event.getAction() == MotionEvent.ACTION_MOVE && pointerCount == 2)
+        if ((mRender.data.mLockSprite.GetType() == Structures.UNLOCK || mRender.data.mRotateBlockType == Structures.ROTATE_BLOCK_NONE) && event.getAction() == MotionEvent.ACTION_MOVE && pointerCount == 2)
         {
+            mPreviousX = -1;
+            mPreviousY = -1;
             // zoom
             float x1 = event.getX(0);
             float y1 = event.getY(0);
@@ -905,13 +1153,22 @@ public class Surface extends GLSurfaceView implements GestureDetector.OnGestureL
 
                 mPoint2[0] = point2[0];
                 mPoint2[1] = point2[1];
+
+                if (mRender.data.mRotateState == Structures.ROTATE_ONLY_AXES) {
+                    mDeltaZ = 0;
+                    Camera.mDeltaZ = 0;
+                }
             }
             Camera.mScaling = true;
 
             mAction = Structures.ACTION_SCALE;
         }
 
-        if (mRender.data.mLockSprite.GetType() == Structures.UNLOCK && event.getAction() == MotionEvent.ACTION_UP) {
+        if ((mRender.data.mLockSprite.GetType() == Structures.UNLOCK || mRender.data.mRotateBlockType == Structures.ROTATE_BLOCK_NONE) && event.getAction() == MotionEvent.ACTION_UP) {
+            if (mAction == Structures.ACTION_AUTO_MOVE) {
+                return res;
+            }
+
             if (mAction == Structures.ACTION_MOVE) {
                 Camera.mDeltaXInertia = mDeltaX;
                 Camera.mDeltaYInertia = mDeltaY;

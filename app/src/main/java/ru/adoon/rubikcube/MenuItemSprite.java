@@ -31,10 +31,14 @@ public class MenuItemSprite {
 
     public FloatBuffer vertexData;
     private  float[] mModelMatrix = new float[16];
-    private int texture;
-    private int texture2;
+    private int texture_ru;
+    private int texture2_ru;
+
+    private int texture_en;
+    private int texture2_en;
     //private Context context;
-    float mSize;
+    float mSize_ru = 0;
+    float mSize_en = 0;
     float mMarginGL;
 
     private final static int POSITION_COUNT = 3;
@@ -44,7 +48,8 @@ public class MenuItemSprite {
 
     private float mDistGL = 0.1f;
     private float mHeightGL = 0.3f;
-    private float mWidthGL;
+    private float mWidthGL_ru;
+    private float mWidthGL_en;
 
     private float mParentHeight;
     private float mParentWidth;
@@ -53,7 +58,8 @@ public class MenuItemSprite {
     private float mRatioY;
 
     private float mHeight;
-    private float mWidth;
+    private float mWidth_ru;
+    private float mWidth_en;
 
     private float mTop;
     private float mLeft;
@@ -62,8 +68,12 @@ public class MenuItemSprite {
     int mIndex;
     int mCntPos;
     int mTextureIndex = 0;
-    int mTextureID = 0;
-    int mTextureID2 = 0;
+    int mTextureID_ru = 0;
+    int mTextureID2_ru = 0;
+
+    int mTextureID_en = 0;
+    int mTextureID2_en = 0;
+    int mLanguage = 0;
 
     public boolean IsEnabled() {
         return mIsEnabled;
@@ -73,16 +83,49 @@ public class MenuItemSprite {
         mIsEnabled = isEnabled;
     }
 
-    public void SetContext(Context context) {
-        if (mTextureID > 0)
-            TextureUtils.deleteTexture(texture);
-        if (mTextureID2 > 0)
-            TextureUtils.deleteTexture(texture2);
+    public void SetLanguage(int language) {
+        mLanguage = language;
+    }
 
-        if (mTextureID > 0)
-            texture = TextureUtils.loadTexture(context, mTextureID);
-        if (mTextureID2 > 0)
-            texture2 = TextureUtils.loadTexture(context, mTextureID2);
+    public void DeleteTexture() {
+        if (mTextureID_ru > 0)
+            TextureUtils.deleteTexture(texture_ru);
+        if (mTextureID2_ru > 0)
+            TextureUtils.deleteTexture(texture2_ru);
+
+        if (mTextureID_en > 0)
+            TextureUtils.deleteTexture(texture_en);
+        if (mTextureID2_en > 0)
+            TextureUtils.deleteTexture(texture2_en);
+    }
+
+    public void SetContext(Context context) {
+        if (texture_ru > 0)
+            TextureUtils.deleteTexture(texture_ru);
+        if (texture2_ru > 0)
+            TextureUtils.deleteTexture(texture2_ru);
+
+        if (texture_en > 0)
+            TextureUtils.deleteTexture(texture_en);
+        if (texture2_en > 0)
+            TextureUtils.deleteTexture(texture2_en);
+
+        int[] out = new int[1];
+
+        if (mTextureID_ru > 0)
+            texture_ru = TextureUtils.loadTexture(context, mTextureID_ru, out);
+        if (mTextureID2_ru > 0)
+            texture2_ru = TextureUtils.loadTexture(context, mTextureID2_ru, out);
+
+        mSize_ru = out[0] / 460f;
+
+        out = new int[1];
+        if (mTextureID_en > 0)
+            texture_en = TextureUtils.loadTexture(context, mTextureID_en, out);
+        if (mTextureID2_en > 0)
+            texture2_en = TextureUtils.loadTexture(context, mTextureID2_en, out);
+
+        mSize_en = out[0] / 460f;
 
         for (int i = 0 ; i < list.size(); i++) {
             list.get(i).SetContext(context);
@@ -95,11 +138,13 @@ public class MenuItemSprite {
 
         mHeightGL = 0.3f / ratioY;
         mDistGL = 0.03f / ratioY;
-        mWidthGL = mSize / ratioX;
+        mWidthGL_ru = mSize_ru / ratioX;
+        mWidthGL_en = mSize_en / ratioX;
         mMarginGL = 1 - (mCntPos * mHeightGL + (mCntPos - 1) * mDistGL) / 2;
 
         mHeight = Structures.GetRealSizeFromGL(parentHeight, mHeightGL);
-        mWidth = Structures.GetRealSizeFromGL(parentWidth, mWidthGL);
+        mWidth_ru = Structures.GetRealSizeFromGL(parentWidth, mWidthGL_ru);
+        mWidth_en = Structures.GetRealSizeFromGL(parentWidth, mWidthGL_en);
 
         float margin = Structures.GetRealSizeFromGL(parentHeight, mMarginGL);
         float dist = Structures.GetRealSizeFromGL(parentHeight, mDistGL);
@@ -114,16 +159,74 @@ public class MenuItemSprite {
         mRatioY = ratioY;
     }
 
-    MenuItemSprite(Context context, int index, int cnt_pos, float size, int textureID, int textureID2, boolean isEnabled) {
+    MenuItemSprite(Context context, int index, int cnt_pos, int textureID_ru, int textureID2_ru, int textureID_en, int textureID2_en, boolean isEnabled) {
         //this.context = context;
-        mSize = size;
-        mTextureID = textureID;
-        mTextureID2 = textureID2;
+        //mSize = size;
+        mTextureID_ru = textureID_ru;
+        mTextureID2_ru = textureID2_ru;
 
-        if (textureID > 0)
-            texture = TextureUtils.loadTexture(context, textureID);
-        if (textureID2 > 0)
-            texture2 = TextureUtils.loadTexture(context, textureID2);
+        mTextureID_en = textureID_en;
+        mTextureID2_en = textureID2_en;
+
+        texture_ru = 0;
+        texture2_ru = 0;
+
+        texture_en = 0;
+        texture2_en = 0;
+
+        /*if (mTextureID_ru > 0)
+            texture_ru = TextureUtils.loadTexture(context, mTextureID_ru);
+        if (mTextureID2_ru > 0)
+            texture2_ru = TextureUtils.loadTexture(context, mTextureID2_ru);
+
+        //if (out != null)
+        //    mSize_ru = out[0] / 460f;
+
+        if (mTextureID_en > 0)
+            texture_en = TextureUtils.loadTexture(context, mTextureID_en);
+        if (mTextureID2_en > 0)
+            texture2_en = TextureUtils.loadTexture(context, mTextureID2_en);*/
+
+        //if (out != null)
+        //    mSize_en = out[0] / 460f;
+
+        mIndex = index;
+
+        mCntPos = cnt_pos;
+        mIsEnabled = isEnabled;
+
+        Matrix.setIdentityM(mModelMatrix, 0);
+    }
+
+    MenuItemSprite(Context context, int index, int cnt_pos, int textureID, int textureID2, boolean isEnabled) {
+        //this.context = context;
+        //mSize = size;
+        mTextureID_ru = textureID;
+        mTextureID2_ru = textureID2;
+
+        mTextureID_en = -1;
+        mTextureID2_en = -1;
+
+        /*if (textureID_ru > 0)
+            texture_ru = TextureUtils.loadTexture(context, textureID_ru);
+        if (textureID2_ru > 0)
+            texture2_ru = TextureUtils.loadTexture(context, textureID2_ru);
+
+        if (textureID_en > 0)
+            texture_en = TextureUtils.loadTexture(context, textureID_en);
+        if (textureID2_en > 0)
+            texture2_en = TextureUtils.loadTexture(context, textureID2_en);*/
+
+        int[] out = null;
+
+        if (mTextureID_ru > 0)
+            texture_ru = TextureUtils.loadTexture(context, mTextureID_ru, out);
+        if (mTextureID2_ru > 0)
+            texture2_ru = TextureUtils.loadTexture(context, mTextureID2_ru, out);
+
+        //if (out != null)
+        //    mSize_en = out[0] / 460f;
+
         mIndex = index;
 
         mCntPos = cnt_pos;
@@ -133,7 +236,20 @@ public class MenuItemSprite {
     }
 
     boolean IsPressed(float x, float y) {
-        if ( y <= mTop + mHeight && y >= mTop && x <= mLeft + mWidth && x >= mLeft)
+        float mWidth = 0;
+        if (mLanguage == 0) {
+            mWidth = mWidth_ru;
+        }
+        else {
+            if (mTextureID_en < 0) {
+                mWidth = mWidth_ru;
+            }
+            else {
+                mWidth = mWidth_en;
+            }
+        }
+
+        if (y <= mTop + mHeight && y >= mTop && x <= mLeft + mWidth && x >= mLeft)
             return true;
         else
             return false;
@@ -150,6 +266,22 @@ public class MenuItemSprite {
     public void SetPos(float move_dist) {
 
         move_dist = move_dist / mRatioX;
+
+        float mWidthGL, mWidth;
+        if (mLanguage == 0) {
+            mWidthGL = mWidthGL_ru;
+            mWidth = mWidth_ru;
+        }
+        else {
+            if (mTextureID_en < 0) {
+                mWidthGL = mWidthGL_ru;
+                mWidth = mWidth_ru;
+            }
+            else {
+                mWidthGL = mWidthGL_en;
+                mWidth = mWidth_en;
+            }
+        }
 
         float[] vertices = {
                 1 - mWidthGL + move_dist, 1 - (mMarginGL + mIndex * (mHeightGL + mDistGL)), -1, 0, 0,
@@ -169,7 +301,7 @@ public class MenuItemSprite {
 
     public void Draw() {
 
-        if (mTextureID <= 0) return;
+        if (mTextureID_ru <= 0) return;
 
         vertexData.position(0);
         glVertexAttribPointer(SpriteItemLocation.aPositionLocation, POSITION_COUNT, GL_FLOAT,
@@ -184,10 +316,38 @@ public class MenuItemSprite {
 
         // помещаем текстуру в target 2D юнита 0
         glActiveTexture(GL_TEXTURE0);
-        if (mTextureIndex == 0)
-            glBindTexture(GL_TEXTURE_2D, texture);
-        else
-            glBindTexture(GL_TEXTURE_2D, texture2);
+        if (mTextureIndex == 0) {
+            if (mLanguage == 0) {
+                if (texture_ru > 0)
+                    glBindTexture(GL_TEXTURE_2D, texture_ru);
+            }
+            else {
+                if (mTextureID_en < 0) {
+                    if (texture_ru > 0)
+                        glBindTexture(GL_TEXTURE_2D, texture_ru);
+                }
+                else {
+                    if (texture_en > 0)
+                        glBindTexture(GL_TEXTURE_2D, texture_en);
+                }
+            }
+        }
+        else {
+            if (mLanguage == 0) {
+                if (texture2_ru > 0)
+                    glBindTexture(GL_TEXTURE_2D, texture2_ru);
+            }
+            else {
+                if (mTextureID2_en < 0) {
+                    if (texture2_ru > 0)
+                        glBindTexture(GL_TEXTURE_2D, texture2_ru);
+                }
+                else {
+                    if (texture2_en > 0)
+                        glBindTexture(GL_TEXTURE_2D, texture2_en);
+                }
+            }
+        }
 
         // юнит текстуры
         glUniform1i(SpriteItemLocation.uTextureUnitLocation, 0);

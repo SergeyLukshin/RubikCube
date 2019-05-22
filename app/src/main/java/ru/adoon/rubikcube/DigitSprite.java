@@ -33,7 +33,7 @@ public class DigitSprite {
     private static final int STRIDE = (POSITION_COUNT
             + TEXTURE_COUNT) * 4;
 
-    private float mHeightGL = 0.19f;
+    public float mHeightGL = 0.19f;
     private float mWidthGL = 0.10f;
     private float mMarginTop = 0;//0.03f;
     private float mMarginRight = 0;//0.03f;
@@ -41,6 +41,7 @@ public class DigitSprite {
     private float mZ = -1f;
     private float mY = -10f;
     private int mCntDigits = 11;
+    private int mLenDigits = 11;
 
     private float mRatioX = 1;
     private float mRatioY = 1;
@@ -53,6 +54,10 @@ public class DigitSprite {
 
     public void SetDigitsCnt(int digits_cnt) {
         mCntDigits = digits_cnt;
+    }
+
+    public void SetDigitsLength(int digits_len) {
+        mLenDigits = digits_len;
     }
 
     public void SetMarginTop(float marginTop) {
@@ -100,7 +105,7 @@ public class DigitSprite {
 
             float marginLeft = 0;
             if (mAlign == Structures.ALIGN_CENTER)
-                marginLeft = 1 - mCntDigits * Width / 2;
+                marginLeft = 1 - mLenDigits * Width / 2;
             if (mAlign == Structures.ALIGN_RIGHT)
                 marginLeft = 1 - Width - mMarginRight;
 

@@ -82,6 +82,7 @@ public class Clock {
             ds.SetMarginTop(0.03f);
             ds.SetAlign(Structures.ALIGN_CENTER);
             ds.SetZ(-0.8f);
+            ds.SetDigitsLength(11);
             ds.SetDigitsCnt(11);
             mDigits.add(ds);
         }

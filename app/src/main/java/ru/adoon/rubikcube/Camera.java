@@ -12,6 +12,7 @@ import android.opengl.Matrix;
 public class Camera {
     static float[] ProjMatrix = new float[16];
     static float[] ViewMatrix = new float[16];
+    public static float mSpeed = 1;
     public static float mDeltaX = 0;
     public static float mDeltaY = 0;
     public static float mDeltaZ = 0;
@@ -21,6 +22,10 @@ public class Camera {
     public static float mScale = 1;
     public static boolean mFirstStart = true;
     public static boolean mScaling = false;
+    public static float mTotalXZRotate = 0;
+    public static float mTotalYRotate = 0;
+    //public static boolean mUpOrDown = false;
+    public static int mDirection = Structures.CAMERA_DOWN;
 
     public static float[] mAccumulatedRotation = new float[16];
     private static float[] mCurrentRotation = new float[16];
@@ -54,7 +59,103 @@ public class Camera {
         Structures.CameraEye[2] *= distance;
     }
 
-    public static void setLookAtM(){
+    public static boolean getStop() {
+        if (mDeltaXInertia == 0 && mDeltaYInertia == 0 && mDeltaZInertia == 0)
+            return true;
+        return false;
+    }
+
+    public static int GetDirection() {
+        return mDirection;
+    }
+
+    public static void SetDirection(int dir) {
+        mDirection = dir;
+    }
+
+    /*public static void SetUpOrDown(boolean val) {
+        mUpOrDown = val;
+    }
+
+    public static boolean IsUpOrDown() {
+        return mUpOrDown;
+    }*/
+
+    public static void InitCamera() {
+        mFirstStart = true;
+
+        if (GLRenderer.data == null) return;
+
+        if (GLRenderer.data.mRotateState == Structures.ROTATE_ONLY_AXES) {
+            if (GLRenderer.data.mFigure.GetFigure() == Structures.PYRAMID) {
+                if (GLRenderer.data.mVisibleSides == 1) {
+                    Camera.SetDirection(Structures.CAMERA_NONE);
+                    Camera.mDeltaX = 0;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                    Camera.mDeltaY = 0;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                    Camera.mDeltaZ = 0;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                }
+                if (GLRenderer.data.mVisibleSides == 2) {
+                    Camera.SetDirection(Structures.CAMERA_NONE);
+                    Camera.mDeltaX = 60;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                    Camera.mDeltaY = 0;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                    Camera.mDeltaZ = 0;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                }
+                if (GLRenderer.data.mVisibleSides == 3) {
+                    Camera.SetDirection(Structures.CAMERA_UP);
+                    Camera.mDeltaX = 60;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                    Camera.mDeltaY = 30;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                    Camera.mDeltaZ = 0;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                }
+            }
+            else {
+                if (GLRenderer.data.mVisibleSides == 1) {
+                    Camera.mDeltaX = 0;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                    Camera.mDeltaY = 0;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                    Camera.mDeltaZ = 0;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                }
+                if (GLRenderer.data.mVisibleSides == 2) {
+                    Camera.mDeltaX = 45;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                    Camera.mDeltaY = 0;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                    Camera.mDeltaZ = 0;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                }
+                if (GLRenderer.data.mVisibleSides == 3) {
+                    Camera.SetDirection(Structures.CAMERA_UP);
+
+                    Camera.mDeltaX = 45;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                    Camera.mDeltaY = 30;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                    Camera.mDeltaZ = 0;
+                    Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+                }
+            }
+        }
+        else {
+            Camera.mDeltaX = 45;
+            Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+            Camera.mDeltaY = 20;
+            Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+            Camera.mDeltaZ = 0;
+            Camera.setLookAtM(GLRenderer.data.mRotateState, 0, 0);
+        }
+    }
+
+    public static void setLookAtM(int RotateState, int MaxXRotateAngle, int MaxYRotateAngle){
 
         if (!mFirstStart && mDeltaX == 0 && mDeltaY == 0 && mDeltaZ == 0
                 && mDeltaXInertia == 0 && mDeltaYInertia == 0 && mDeltaZInertia == 0 && !mScaling) return;
@@ -77,16 +178,48 @@ public class Camera {
         }
         else {
             if (mDeltaXInertia != 0 || mDeltaYInertia != 0 || mDeltaZInertia != 0) {
+
+                if (RotateState == Structures.ROTATE_ONLY_AXES && GLRenderer.data.mVisibleSides == 3) {
+                    if (Camera.GetDirection() == Structures.CAMERA_UP)
+                        Matrix.rotateM(mCurrentRotation, 0, GLRenderer.data.mFigure.GetYRotateAngleBeg(), 1.0f, 0.0f, 0.0f);
+                    else
+                        Matrix.rotateM(mCurrentRotation, 0, -1 * GLRenderer.data.mFigure.GetYRotateAngleBeg(), 1.0f, 0.0f, 0.0f);
+                }
+
                 Matrix.rotateM(mCurrentRotation, 0, mDeltaXInertia, 0.0f, 1.0f, 0.0f);
                 Matrix.rotateM(mCurrentRotation, 0, mDeltaYInertia, 1.0f, 0.0f, 0.0f);
                 Matrix.rotateM(mCurrentRotation, 0, mDeltaZInertia, 0.0f, 0.0f, 1.0f);
 
+                if (RotateState == Structures.ROTATE_ONLY_AXES && GLRenderer.data.mVisibleSides == 3) {
+                    if (Camera.GetDirection() == Structures.CAMERA_UP)
+                        Matrix.rotateM(mCurrentRotation, 0, -1 * GLRenderer.data.mFigure.GetYRotateAngleBeg(), 1.0f, 0.0f, 0.0f);
+                    else
+                        Matrix.rotateM(mCurrentRotation, 0, GLRenderer.data.mFigure.GetYRotateAngleBeg(), 1.0f, 0.0f, 0.0f);
+                }
+
                 Matrix.multiplyMM(mTemporaryMatrix, 0, mCurrentRotation, 0, mAccumulatedRotation, 0);
                 System.arraycopy(mTemporaryMatrix, 0, mAccumulatedRotation, 0, 16);
 
-                mDeltaXInertia /= 1.2;
-                mDeltaYInertia /= 1.2;
-                mDeltaZInertia /= 1.2;
+                if (RotateState == Structures.ROTATE_ALL_DIRECTION) {
+                    mDeltaXInertia /= 1.2;
+                    mDeltaYInertia /= 1.2;
+                    mDeltaZInertia /= 1.2;
+                }
+                if (RotateState == Structures.ROTATE_ONLY_AXES) {
+                    mTotalXZRotate += mDeltaXInertia;
+                    mTotalXZRotate += mDeltaZInertia;
+                    mTotalYRotate += mDeltaYInertia;
+
+                    if (Math.abs(mTotalXZRotate) >= MaxXRotateAngle) {
+                        mDeltaXInertia = 0;
+                        mDeltaZInertia = 0;
+                        mTotalXZRotate = 0;
+                    }
+                    if (Math.abs(mTotalYRotate) >= MaxYRotateAngle) {
+                        mDeltaYInertia = 0;
+                        mTotalYRotate = 0;
+                    }
+                }
 
                 if (Math.abs(mDeltaXInertia) < 0.001) mDeltaXInertia = 0;
                 if (Math.abs(mDeltaYInertia) < 0.001) mDeltaYInertia = 0;

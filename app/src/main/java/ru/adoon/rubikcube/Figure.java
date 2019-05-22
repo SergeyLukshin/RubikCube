@@ -54,9 +54,14 @@ public class Figure {
         }
     }
 
+    public int GetFigure() {
+        return mFigureType;
+    }
+
     public void SetFigure(int type, int sub_type) {
         mFigureType = type;
         mFigureSubType = sub_type;
+        Camera.InitCamera();
         FigureInit();
     }
 
@@ -213,6 +218,30 @@ public class Figure {
             return 4;
 
         return 0;
+    }
+
+    public int GetMaxXRotateAngle() {
+        if (mFigureType == Structures.PYRAMID)
+            return 120;
+        return 90;
+    }
+
+    public int GetYRotateAngleBeg() {
+        if (mFigureType == Structures.PYRAMID)
+            return 30;
+        return 30;
+    }
+
+    public int GetMaxYRotateAngle() {
+        if (GLRenderer.data.mVisibleSides == 3) {
+            if (mFigureType != Structures.PYRAMID)
+                return 60;
+            else
+                return 60;
+        }
+        else {
+            return 90;
+        }
     }
 
     public int GetLimitAngle() {
