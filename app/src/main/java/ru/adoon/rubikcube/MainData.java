@@ -218,7 +218,7 @@ public class MainData {
         }
         Camera.mScale  = sPref.getFloat("Camera_Scale", 1);
         Camera.SetDirection(sPref.getInt("Camera_Direction", Structures.CAMERA_NONE));
-        Camera.mSpeed = sPref.getInt("Camera_Speed", 1);
+        Camera.mSpeed = sPref.getFloat("Camera_Speed", 1);
 
         if (mClock != null) {
             mClock.mTimeStart = sPref.getLong("Clock_TimeStart", -1);
